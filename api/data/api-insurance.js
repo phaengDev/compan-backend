@@ -4,6 +4,7 @@ const db = require('../db');
 const moment = require('moment');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const currentDatetime = moment();
 const dateTime = currentDatetime.format('YYYY-MM-DD HH:mm:ss');
 router.post("/create", function (req, res) {
@@ -35,7 +36,7 @@ router.post("/create", function (req, res) {
 
         const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));
         const money_taxes = parseFloat(req.body.money_taxes.replace(/,/g, ''));
-        const registration_fee = req.body.registration_fee;
+        const registration_fee = parseFloat(req.body.registration_fee.replace(/,/g, ''));
         const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));
         const pre_tax_profit = parseFloat(req.body.pre_tax_profit.replace(/,/g, ''));
         const incom_money = parseFloat(req.body.incom_money.replace(/,/g, ''));
@@ -518,41 +519,63 @@ router.delete('/:id', function (req, res) {
     const whereAc = `contract_code_fk='${insuranceId}'`;
     const whereCar = `contract_id_fk='${insuranceId}'`;
     const whereDoc = `contract_code_fk='${insuranceId}'`;
+    const wherePay = `contract_code_fk='${insuranceId}'`;
     try {
-    db.deleteData('oac_insurance', where, (err, results) => {
-        if (err) {
-            console.error('Error insurance data:', err);
-            return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
-        }
-
-        db.deleteData('oac_action_insurance', whereAc, (err, results) => {
+        db.deleteData('oac_insurance', where, (err, results) => {
             if (err) {
-                console.error('Error action-insurance data:', err);
+                console.error('Error insurance data:', err);
                 return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
             }
-        });
 
-        db.deleteData('oac_cars_insurance', whereCar, (err, results) => {
-            if (err) {
-                console.error('Error cars insurance data:', err);
-                return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
-            }
-        });
-        db.deleteData('oac_doc_insurance', whereDoc , (err, results) => {
-            if (err) {
-                console.error('Error doc insurance data:', err);
-                return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
-            }
-        });
+            db.deleteData('oac_action_insurance', whereAc, (err, results) => {
+                if (err) {
+                    console.error('Error action-insurance data:', err);
+                    return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                }
+            });
 
-        console.log('Data inserted successfully:', results);
-        res.status(200).json({ message: 'ການດຳເນີນງານສຳເລັດແລ້ວ'});
-    });
-} catch (err) {
-    console.error('Error deleting data:', err);
-    res.status(500).json({ error: 'ການລົບຂໍ້ມູນບໍ່ສຳເລັດ' });
-}
-})
+
+            db.deleteData('oac_cars_insurance', whereCar, (err, results) => {
+                if (err) {
+                    console.error('Error cars insurance data:', err);
+                    return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                }
+            });
+            db.selectAllwhere('oac_doc_insurance', whereDoc, (err, docResults) => {
+                if (err) {
+                    return res.status(400).send();
+                }
+                if (docResults && docResults.length > 0) {
+                    const doc = docResults[0];
+                    const filePath = path.join('assets/docfile/', doc.file_insurance);
+                    fs.unlink(filePath, (err) => {
+                        if (err) {
+                            console.error('Error deleting the existing file:', err);
+                        }
+                    });
+                }
+            })
+            db.deleteData('oac_doc_insurance', whereDoc, (err, results) => {
+                if (err) {
+                    console.error('Error doc insurance data:', err);
+                    return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                }
+            });
+            db.deleteData('oac_document_pay', wherePay, (err, results) => {
+                if (err) {
+                    console.error('Error doc insurance data:', err);
+                    return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                }
+            });
+
+            console.log('Data inserted successfully:', results);
+            res.status(200).json({ message: 'ການດຳເນີນງານສຳເລັດແລ້ວ' });
+        });
+    } catch (err) {
+        console.error('Error deleting data:', err);
+        res.status(500).json({ error: 'ການລົບຂໍ້ມູນບໍ່ສຳເລັດ' });
+    }
+});
 
 
 

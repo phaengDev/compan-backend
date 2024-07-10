@@ -52,6 +52,8 @@ app.use('/currency',useCurrency)
 app.use('/retrun',useRetrunIn)
 app.use('/upload',useUpload)
 app.use('/login',useLogin);
-app.listen(9494,()=>{
-    console.log("Server running on http://localhost:9494")
+
+const PORT = process.env.PORT || 9494;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
