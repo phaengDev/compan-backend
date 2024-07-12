@@ -77,7 +77,6 @@ router.post("/createMT", async function (req, res) {
                 } else {
                     resolve(results);
                 }
-                
                 const newData = ['2', doccmDate, item.contract_code_fk];
                 const condition = 'contract_code_fk=?';
                 db.updateData('oac_action_insurance', field, newData, condition, (err, results) => {

@@ -27,6 +27,8 @@ const useHome=require('./api/reports/report-home')
 const useCurrency=require('./api/setting/api-currency');
 const useRetrunIn=require('./api/data/api-inurance-retrun');
 const useUpload=require('./api/data/uploadfile');
+const useComisget=require('./api/data/api-setcomision');
+const useComispay=require('./api/data/api-comisionpay');
 const useLogin=require('./api/checklogin');
 const path = require("path")
 app.use("/image", express.static(path.join(__dirname, "./assets/")))
@@ -48,9 +50,11 @@ app.use('/report',useRerport);
 app.use('/debt',useRerportDebt);
 app.use('/pays',usePaydebt);
 app.use('/home',useHome);
-app.use('/currency',useCurrency)
-app.use('/retrun',useRetrunIn)
-app.use('/upload',useUpload)
+app.use('/currency',useCurrency);
+app.use('/retrun',useRetrunIn);
+app.use('/upload',useUpload);
+app.use('/comisget',useComisget);
+app.use('/comispay',useComispay);
 app.use('/login',useLogin);
 
 const PORT = process.env.PORT || 9494;

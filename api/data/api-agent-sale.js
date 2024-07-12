@@ -38,7 +38,6 @@ router.post("/create", function (req, res) {
 
 
 router.get("/", function (req, res) {
-    
     const tables = `oac_agent_sale
     LEFT JOIN oac_district ON oac_agent_sale.district_id_fk=oac_district.district_id
     LEFT JOIN oac_province ON oac_district.provice_fk=oac_province.province_id`;

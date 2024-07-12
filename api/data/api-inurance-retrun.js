@@ -8,11 +8,11 @@ const dateTime = currentDatetime.format('YYYY-MM-DD HH:mm:ss');
 router.post("/create", function (req, res) {
     const table = 'oac_insurance_retrun';
     db.autoId(table, 'insurance_retrun_id', (err, insurance_retrun_id) => {
-        const { insurance_retrunId, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, currency_id_fk, status_company, company_date, status_agent, agent_date, status_oac, oac_date, remark_text, } = req.body;
+        const { insurance_retrunId, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text } = req.body;
         const retrun_balance = parseFloat(req.body.retrun_balance.replace(/,/g, ''));
         if (!insurance_retrunId) {
-            const fields = 'insurance_retrun_id, company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,status_agent,agent_date,status_oac,oac_date,remark_text,register_date';
-            const data = [insurance_retrun_id, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, retrun_balance, currency_id_fk, status_company, company_date, status_agent, agent_date, status_oac, oac_date, remark_text, dateTime];
+            const fields = 'insurance_retrun_id, company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text,register_date';
+            const data = [insurance_retrun_id, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text, dateTime];
             
             db.insertData(table, fields, data, (err, results) => {
                 if (err) {
@@ -24,8 +24,8 @@ router.post("/create", function (req, res) {
             });
         } else {
 
-            const fields = 'company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,status_agent,agent_date,status_oac,oac_date,remark_text';
-            const newData = [company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number,retrun_balance, currency_id_fk, status_company, company_date, status_agent, agent_date, status_oac, oac_date, remark_text, insurance_retrunId];
+            const fields = 'company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text';
+            const newData = [company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number,retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date, percent_oac,status_oac, oac_date, remark_text, insurance_retrunId];
             const condition = 'insurance_retrun_id=?';
             db.updateData(table, fields, newData, condition, (err, results) => {
                 if (err) {
@@ -107,8 +107,12 @@ retrun_balance,
 currency_id_fk,
 status_company,
 company_date,
+percent_agent,
+(retrun_balance * percent_agent / 100) AS balance_agent,
 status_agent,
 agent_date,
+percent_oac,
+(retrun_balance * percent_oac / 100) AS balance_oac,
 status_oac,
 oac_date,
 remark_text,
@@ -217,8 +221,12 @@ router.post("/report", function (req, res) {
         currency_id_fk,
         status_company,
         company_date,
+        percent_agent,
+        (retrun_balance * percent_agent / 100) AS balance_agent,
         status_agent,
         agent_date,
+        percent_oac,
+        (retrun_balance * percent_oac / 100) AS balance_oac,
         status_oac,
         oac_date,
         remark_text,

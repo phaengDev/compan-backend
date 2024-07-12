@@ -22,7 +22,7 @@ router.post("/create", function (req, res) {
     const upload = multer({ storage }).single('file_doct');
     upload(req, res, function (err) {
         const { incuranecCode, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, currency_id_fk, contract_number, user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village } = req.body;
-        const { statusIns, car_type_id_fk, car_brand_id_fk, car_version_id_fk, car_registration, vehicle_number, tank_number } = req.body;
+        const { statusIns, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number } = req.body;
         const {
             percent_taxes,
             precent_incom,
@@ -70,8 +70,8 @@ router.post("/create", function (req, res) {
                     }
                     if (statusIns && statusIns === 2) {  //--------- ບັນທຶກຂໍ້ມູນລົດ
                         db.autoId(tableCar, 'cars_code', (err, cars_code) => {
-                            const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,car_version_id_fk,car_registration,vehicle_number,tank_number,createcar_date';
-                            const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, car_version_id_fk, car_registration, vehicle_number, tank_number, dateTime];
+                            const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number,createcar_date';
+                            const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, dateTime];
                             db.insertData(tableCar, fieldcar, datacar, (err, resultscar) => {
                                 if (err) {
                                     return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
@@ -164,8 +164,8 @@ router.post("/create", function (req, res) {
                     return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
                 }
                 if (statusIns && statusIns === 2) {  //--------- ບັນທຶກຂໍ້ມູນລົດ
-                    const fieldcar = 'car_type_id_fk,car_brand_id_fk,car_version_id_fk,car_registration,vehicle_number,tank_number';
-                    const datacar = [car_type_id_fk, car_brand_id_fk, car_version_id_fk, car_registration, vehicle_number, tank_number, incuranecCode];
+                    const fieldcar = 'car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number';
+                    const datacar = [car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, incuranecCode];
                     const conditionCar = 'contract_id_fk=?';
                     db.updateData(tableCar, fieldcar, datacar, conditionCar, (err, resultscar) => {
                         if (err) {
@@ -261,7 +261,7 @@ router.post("/renew", function (req, res) {
     const upload = multer({ storage }).single('file_doct');
     upload(req, res, function (err) {
         const { incuranecCode, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, currency_id_fk, contract_number, user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village } = req.body;
-        const { statusIns, car_type_id_fk, car_brand_id_fk, car_version_id_fk, car_registration, vehicle_number, tank_number } = req.body;
+        const { statusIns, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number } = req.body;
         const {
             percent_taxes,
             precent_incom,
@@ -308,8 +308,8 @@ router.post("/renew", function (req, res) {
                 }
                 if (statusIns && statusIns === 2) {  //--------- ບັນທຶກຂໍ້ມູນລົດ
                     db.autoId(tableCar, 'cars_code', (err, cars_code) => {
-                        const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,car_version_id_fk,car_registration,vehicle_number,tank_number,createcar_date';
-                        const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, car_version_id_fk, car_registration, vehicle_number, tank_number, dateTime];
+                        const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number,createcar_date';
+                        const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, dateTime];
                         db.insertData(tableCar, fieldcar, datacar, (err, resultscar) => {
                             if (err) {
                                 return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
@@ -526,14 +526,12 @@ router.delete('/:id', function (req, res) {
                 console.error('Error insurance data:', err);
                 return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
             }
-
             db.deleteData('oac_action_insurance', whereAc, (err, results) => {
                 if (err) {
                     console.error('Error action-insurance data:', err);
                     return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
                 }
             });
-
 
             db.deleteData('oac_cars_insurance', whereCar, (err, results) => {
                 if (err) {
