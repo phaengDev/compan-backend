@@ -68,7 +68,7 @@ router.post("/create", function (req, res) {
                         console.error('Error inserting data:', err);
                         return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
                     }
-                    if (statusIns && statusIns === 2) {  //--------- ບັນທຶກຂໍ້ມູນລົດ
+                    if (statusIns && statusIns === '2') {  //--------- ບັນທຶກຂໍ້ມູນລົດ
                         db.autoId(tableCar, 'cars_code', (err, cars_code) => {
                             const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number,createcar_date';
                             const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, dateTime];
@@ -163,7 +163,7 @@ router.post("/create", function (req, res) {
                     console.error('Error inserting data:', err);
                     return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
                 }
-                if (statusIns && statusIns === 2) {  //--------- ບັນທຶກຂໍ້ມູນລົດ
+                if (statusIns && statusIns === '2') {  //--------- ບັນທຶກຂໍ້ມູນລົດ
                     const fieldcar = 'car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number';
                     const datacar = [car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, incuranecCode];
                     const conditionCar = 'contract_id_fk=?';
@@ -306,7 +306,7 @@ router.post("/renew", function (req, res) {
                     console.error('Error inserting data:', err);
                     return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
                 }
-                if (statusIns && statusIns === 2) {  //--------- ບັນທຶກຂໍ້ມູນລົດ
+                if (statusIns && statusIns === '2') {  //--------- ບັນທຶກຂໍ້ມູນລົດ
                     db.autoId(tableCar, 'cars_code', (err, cars_code) => {
                         const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number,createcar_date';
                         const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, dateTime];
@@ -388,7 +388,7 @@ router.post("/renew", function (req, res) {
 
                 //============= ອັບເດດສັນຍາເກົ່າ
                 const fieldeEd = 'insurance_new_id,contract_status';
-                const dataEd = [incuranecCode, '2', incuranecCode];
+                const dataEd = [incuranec_code, '2', incuranecCode];
                 const conditionEd = 'incuranec_code=?';
                 db.updateData(tableins, fieldeEd, dataEd, conditionEd, (err, results) => {
                     if (err) {

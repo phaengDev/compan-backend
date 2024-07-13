@@ -73,8 +73,8 @@ router.put("/edit", async (req, res) => {
     });
 });
 router.post("/single", function (req, res) {
-    const { companyId, typeins, agentId } = req.body;
-    const wheres = `company_id_fk=${companyId} AND insurnce_type_fk=${typeins}`;
+    const { companyId, typeinsId, agentId } = req.body;
+    const wheres = `company_id_fk=${companyId} AND insurnce_type_fk=${typeinsId}`;
 
     db.fetchSingle('oac_commision_get', '*', wheres, (err, results) => {
         if (err) {
@@ -86,7 +86,7 @@ router.post("/single", function (req, res) {
             psget = results.percent;
         }
 
-        const whereAg = `company_id_fk=${companyId} AND insurnce_type_fk=${typeins} AND agent_id_fk=${agentId}`;
+        const whereAg = `company_id_fk=${companyId} AND insurnce_type_fk=${typeinsId} AND agent_id_fk=${agentId}`;
         db.fetchSingle('oac_commision_pay', '*', whereAg, (err, resultsAg) => {
             if (err) {
                 return res.status(400).json({ message: 'Error fetching agent commission data' });
