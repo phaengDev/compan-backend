@@ -21,8 +21,8 @@ router.get("/balanch", function (req, res) {
         
     const tables = `oac_insurance`;
     const wheres = `contract_status = '1'`;
-    const fields = ` COUNT(*) AS qtyAll,
-    COUNT(CASE WHEN DATEDIFF(CURDATE(), contract_end_date) <= 0 THEN 1 END) AS run_out,
+    const fields = `COUNT(*) AS qtyAll,
+    COUNT(CASE WHEN DATEDIFF(contract_end_date,CURDATE()) <= 0 THEN 1 END) AS run_out,
     COUNT(CASE WHEN DATEDIFF(CURDATE(), contract_end_date) <= 10 AND DATEDIFF(CURDATE(), contract_end_date) >= 1 THEN 1 END) AS qty_almost,
     (SELECT COUNT(*) FROM oac_custom_buyer WHERE status_changs = '1') AS custom_qty`;
     db.fetchSingle(tables, fields, wheres, (err, rescount) => {
