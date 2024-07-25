@@ -9,7 +9,7 @@ router.get("/balanch", function (req, res) {
     const table = `oac_insurance 
     LEFT JOIN oac_action_insurance ON oac_insurance.incuranec_code=oac_action_insurance.contract_code_fk
     LEFT JOIN oac_currency ON oac_action_insurance.currency_id_fk=oac_currency.currency_id `;
-    const where = ` contract_status='1' AND EXTRACT(YEAR FROM contract_end_date) = EXTRACT(YEAR FROM CURRENT_DATE)`;
+    const where = ` contract_status='1' AND EXTRACT(YEAR FROM contract_start_date) = EXTRACT(YEAR FROM CURRENT_DATE)`;
     const field = `SUM(insuranc_included*reate_price) AS insuranc_included,
     SUM(incom_finally*reate_price) AS incom_finally,
     SUM(expences_pays_taxes*reate_price) as expences_pays_taxes,
@@ -50,7 +50,7 @@ router.get('/getChartData', (req, res) => {
     SELECT 10 UNION ALL
     SELECT 11
 ) AS months
-LEFT JOIN oac_insurance ON MONTH(contract_end_date) = MONTH(DATE_ADD(NOW(), INTERVAL n MONTH)) AND  EXTRACT(YEAR FROM contract_end_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+LEFT JOIN oac_insurance ON MONTH(contract_start_date) = MONTH(DATE_ADD(NOW(), INTERVAL n MONTH)) AND  EXTRACT(YEAR FROM contract_start_date) = EXTRACT(YEAR FROM CURRENT_DATE)
  LEFT JOIN oac_action_insurance ON oac_insurance.incuranec_code=oac_action_insurance.contract_code_fk 
  LEFT JOIN oac_currency ON oac_action_insurance.currency_id_fk=oac_currency.currency_id 
   GROUP BY MonthNumber

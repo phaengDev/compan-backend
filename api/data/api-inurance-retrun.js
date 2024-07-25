@@ -2,17 +2,34 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const moment = require('moment');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const currentDatetime = moment();
 const dateNow = currentDatetime.format('YYYY-MM-DD');
 const dateTime = currentDatetime.format('YYYY-MM-DD HH:mm:ss');
 router.post("/create", function (req, res) {
+    let fileName = '';
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, './assets/docfile');
+        },
+        filename: function (req, file, cb) {
+            const ext = path.extname(file.originalname);
+            fileName = `retrun-${Date.now()}${ext}`;
+            cb(null, fileName);
+        }
+    });
+    const upload = multer({ storage }).single('file_doc');
+    upload(req, res, function (err) {
     const table = 'oac_insurance_retrun';
     db.autoId(table, 'insurance_retrun_id', (err, insurance_retrun_id) => {
+
         const { insurance_retrunId, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text } = req.body;
         const retrun_balance = parseFloat(req.body.retrun_balance.replace(/,/g, ''));
         if (!insurance_retrunId) {
-            const fields = 'insurance_retrun_id, company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text,register_date';
-            const data = [insurance_retrun_id, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text, dateTime];
+            const fields = 'insurance_retrun_id, company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text,register_date,file_doc';
+            const data = [insurance_retrun_id, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text, dateTime,fileName];
             
             db.insertData(table, fields, data, (err, results) => {
                 if (err) {
@@ -24,8 +41,22 @@ router.post("/create", function (req, res) {
             });
         } else {
 
-            const fields = 'company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text';
-            const newData = [company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number,retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date, percent_oac,status_oac, oac_date, remark_text, insurance_retrunId];
+            const where = `insurance_retrun_id='${insurance_retrunId}'`;
+            db.selectWhere(table, '*', where, (err, results) => {
+                if (results[0].file_doc && results[0].file_doc !== '' && fileName !== '') {
+                    const filePath = path.join('assets/docfile/', results[0].file_doc);
+                    fs.unlink(filePath, (err) => {
+                        if (err) {
+                            console.error('Error deleting the existing file:', err);
+                        }
+                    });
+                }
+                let filedoc = results[0].file_doc;
+                if (fileName !== '') {
+                    filedoc = fileName;
+                }
+            const fields = 'company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text,file_doc';
+            const newData = [company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number,retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date, percent_oac,status_oac, oac_date, remark_text,filedoc, insurance_retrunId];
             const condition = 'insurance_retrun_id=?';
             db.updateData(table, fields, newData, condition, (err, results) => {
                 if (err) {
@@ -35,9 +66,11 @@ router.post("/create", function (req, res) {
                 console.log('Data updated successfully:', results);
                 res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ', data: results });
             });
+        });
 
         }
     });
+});
 });
 
 

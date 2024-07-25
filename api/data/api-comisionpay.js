@@ -89,7 +89,7 @@ router.post("/single", function (req, res) {
 
 
 router.post("/fetch", function (req, res) {
-    const { companyId_fk, insurnce_typeId } = req.body;
+    const { companyId_fk, insurnce_typeId,agentId_fk } = req.body;
     let insurnce_type_fk = '';
     if (insurnce_typeId) {
         insurnce_type_fk = `AND insurnce_type_fk='${insurnce_typeId}'`;
@@ -97,6 +97,10 @@ router.post("/fetch", function (req, res) {
     let company_id_fk = '';
     if (companyId_fk) {
         company_id_fk = `AND company_id_fk='${companyId_fk}'`;
+    }
+    let agent_id_fk = '';
+    if (agentId_fk) {
+        agent_id_fk = `AND agent_id_fk='${agentId_fk}'`;
     }
 
     const tables = `oac_commision_pay
@@ -111,7 +115,7 @@ router.post("/fetch", function (req, res) {
 	oac_company.com_name_lao, 
 	oac_type_insurance.type_in_name,
     oac_agent_sale.agent_name`;
-    const wheres = `com_status='1' ${company_id_fk} ${insurnce_type_fk} `;
+    const wheres = `com_status='1' ${company_id_fk} ${insurnce_type_fk} ${agent_id_fk}`;
     db.selectWhere(tables, field, wheres, (err, results) => {
         if (err) {
             return res.status(400).send();
