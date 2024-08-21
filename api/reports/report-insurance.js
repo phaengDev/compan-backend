@@ -133,10 +133,20 @@ if(start_date && end_date ){
     })
 });
 
-router.get("/notific", function (req, res) {
+router.post("/notific", function (req, res) {
+    const {user_type,companyId} = req.body;
+    let company_agent_fk=``;
+    if(user_type===2){
+        company_agent_fk=`AND agent_id_fk=${companyId}`;
+    }else if(user_type===3){
+        company_agent_fk=`AND custom_id_fk=${companyId}`;
+    }else if(user_type===4){
+        company_agent_fk=`AND company_id_fk=${companyId}`;
+    }
+
     const tables = `view_insurance_all`;
     const fields = `*`;
-    const wheres = `contract_status='1' AND day_contract <=10 AND day_contract >=1`;
+    const wheres = `contract_status='1' AND day_contract <=10 AND day_contract >=1 ${company_agent_fk}`;
     db.selectWhere(tables, fields, wheres, (err, results) => {
         if (err) {
             return res.status(400).send();

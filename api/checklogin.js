@@ -50,7 +50,7 @@ router.post("/check", function(req, res) {
                     user_Id: results.user_Id,
                     userEmail: results.userEmail,
                     username: results.userName,
-                    branch_Id: results.company_agent_fk,
+                    company_agent_fk: results.company_agent_fk,
                     user_type_fk:results.user_type_fk,
                     statusUse:results.statusUse
                 });

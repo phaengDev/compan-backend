@@ -4,8 +4,10 @@ const cors = require("cors");
 const bodyParser = require('body-parser');
 app.use(express.json());
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+const path = require("path")
+app.use("/image", express.static(path.join(__dirname, "./assets/")))
 
 const typeCars=require('./api/setting/api-type-car');
 const brandsCras=require('./api/setting/api-brands-cras');
@@ -30,8 +32,6 @@ const useUpload=require('./api/data/uploadfile');
 const useComisget=require('./api/data/api-setcomision');
 const useComispay=require('./api/data/api-comisionpay');
 const useLogin=require('./api/checklogin');
-const path = require("path")
-app.use("/image", express.static(path.join(__dirname, "./assets/")))
 //===================== use router
 app.use('/typecar',typeCars);
 app.use('/brands',brandsCras);
@@ -57,7 +57,7 @@ app.use('/comisget',useComisget);
 app.use('/comispay',useComispay);
 app.use('/login',useLogin);
 
-const PORT = process.env.PORT || 9494;
+const PORT = process.env.PORT || 3030;
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

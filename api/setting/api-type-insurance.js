@@ -5,8 +5,9 @@ const db = require('../db');
 // const jwt = require('../../jwt');
 
 router.post("/create", function (req, res) {
-    const {status_ins,type_in_name} = req.body;
+    const {type_ins_Id,status_ins,type_in_name} = req.body;
     const table = 'oac_type_insurance';
+    if(!type_ins_Id){
     db.autoId(table, 'type_insid', (err, type_insid) => {
     const fields = 'type_insid,status_ins,type_in_name';
     const data = [type_insid,status_ins,type_in_name];
@@ -19,13 +20,9 @@ router.post("/create", function (req, res) {
         res.status(200).json({ message: 'ການດຳເນີນງານສຳເລັດແລ້ວ', data: results });
     });
 });
-});
-
-router.post("/edit", function (req, res) {
-    const {type_insid, status_ins,type_in_name} = req.body;
-    const table = 'oac_type_insurance';
-    const field = 'type_insid,status_ins,type_in_name';
-    const newData = [type_insid,status_ins,type_in_name]; 
+    }else{
+    const field = 'status_ins,type_in_name';
+    const newData = [status_ins,type_in_name,type_ins_Id]; 
     const condition = 'type_insid=?'; 
     db.updateData(table, field, newData, condition, (err, results) => {
         if (err) {
@@ -34,8 +31,11 @@ router.post("/edit", function (req, res) {
         }
         console.log('Data updated successfully:', results);
         res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ', data: results });
-    });
+    }); 
+    }
+
 });
+
 
 
 router.delete("/:id", async (req, res)=> {

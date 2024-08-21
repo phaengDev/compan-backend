@@ -1,5 +1,11 @@
 
 const mysql = require('mysql2');
+// const connection = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: '',
+//     database: 'insurance_info'
+// });
 const connection = mysql.createConnection({
     host: '45.77.241.213',
     user: 'root',
