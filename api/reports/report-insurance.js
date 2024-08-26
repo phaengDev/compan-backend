@@ -48,6 +48,15 @@ let conditions=`${companyId_fk} ${insurance_typeId} ${agentId_fk} ${type_buyerId
                     contract.file_doc = resultsDoc;
                     resolve(contract);
                 });
+
+                db.selectWhere('oac_document_pay', '*', whereDoc, (err, resultsPay) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    contract.file_comits = resultsPay;
+                    resolve(contract);
+                });
+
             });
         });
         Promise.all(promises)
