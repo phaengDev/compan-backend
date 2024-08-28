@@ -130,6 +130,13 @@ if(start_date && end_date ){
                     contract.file_doc = resultsDoc;
                     resolve(contract);
                 });
+                db.selectWhere('oac_document_pay', '*', whereDoc, (err, resultsPay) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    contract.file_comits = resultsPay;
+                    resolve(contract);
+                });
             });
         });
         Promise.all(promises)
