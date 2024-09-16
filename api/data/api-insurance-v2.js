@@ -37,39 +37,33 @@ router.post("/create", function (req, res) {
             user_district_fk,
             user_village,
             status_use,
-            checkbene
         } = req.body;
         const { statusIns, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number } = req.body;
-        const { expences_pays_taxes,
-            incom_finally,
-            incom_money,
-            initial_fee,
-            money_percent_fee,
-            money_taxes,
-            net_income,
-            pays_advance_fee,
-            pre_tax_profit,
-            percent_taxes,
-            precent_incom,
-            percent_akorn,
-            percent_eps,
-            percent_fee_eps,
+        const {
+            percent_taxes, //ອາກອນ
+            precent_incom, //ເປີເຊັນ ຮັບ
+            percent_akorn, //ອ/ກ.ຮັບ c
+            percent_eps, //ເປີເຊັນ ຈ່າຍ
+            percent_fee_eps,//ອ/ກ.ຈ່າຍ
             status_company,
             status_agent,
             status_oac
         } = req.body;
 
-        // const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));
-        // const money_taxes = parseFloat(req.body.money_taxes.replace(/,/g, ''));
-        const registration_fee = parseFloat(req.body.registration_fee.replace(/,/g, ''));
-        const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));
-        // const pre_tax_profit = parseFloat(req.body.pre_tax_profit.replace(/,/g, ''));
-        // const incom_money = parseFloat(req.body.incom_money.replace(/,/g, ''));
-        // const incom_finally = parseFloat(req.body.incom_finally.replace(/,/g, ''));
-        // const pays_advance_fee = parseFloat(req.body.pays_advance_fee.replace(/,/g, ''));
-        // const money_percent_fee = parseFloat(req.body.money_percent_fee.replace(/,/g, ''));
-        // const expences_pays_taxes = parseFloat(req.body.expences_pays_taxes.replace(/,/g, ''));
-        // const net_income = parseFloat(req.body.net_income.replace(/,/g, ''));
+        const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));//ຄ່າທຳນຽມເບື້ອງຕົ້ນ
+        const money_taxes = (initial_fee * percent_taxes) / 100; //----- ຄ່າອາກອນ
+        const registration_fee = parseFloat(req.body.registration_fee.replace(/,/g, '')); //ຄ່າລົງທະບຽນ
+        const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));//ຄ່າທຳນຽມປະກັນໄພລວມ
+
+        const pre_tax_profit = (initial_fee * precent_incom) / 100; //----- ຄອມກ່ອນອາກອນ
+        const incom_money = (pre_tax_profit * percent_akorn) / 100; //-- ອ.ກ ລາຍໄດ້  (ຄອມຮັບ)
+        const incom_finally = (pre_tax_profit - incom_money); //-- ຄອມຫຼັງຫັກອາກອນ
+
+        const pays_advance_fee = (initial_fee * percent_eps) / 100; //-------ຄອມຈ່າຍກ່ອນອາກອນ
+        const money_percent_fee = (pays_advance_fee * percent_fee_eps) / 100; //---ອ.ກ ລາຍໄດ້ (ຄອມຈ່າຍ)
+        const expences_pays_taxes = (pays_advance_fee - money_percent_fee); //----ຄອມຈ່າຍຫຼັງຫັກອາກອນ
+
+        const net_income = (incom_finally - expences_pays_taxes);//--ລາຍຮັບສຸທິ
 
         const contract_start_date = moment(req.body.contract_start_date).format('YYYY-MM-DD');
         const contract_end_date = moment(req.body.contract_end_date).format('YYYY-MM-DD');
@@ -174,46 +168,14 @@ router.post("/create", function (req, res) {
                     if (user_dob) {
                         userdob = moment(user_dob).format('YYYY-MM-DD');
                     }
-                    if(user_fname && user_fname !==''){
-                    const databene = [incuranec_code, no_contract, user_fname, user_lname, user_gender, userdob, user_tel, user_district_fk, user_village, status_use];
-                    db.insertData('oac_beneficiaries', fieldsbene, databene, (err, results) => {
-                        if (err) {
-                            return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
-                        }
-                    })
-                }
-
-
-
-                    // const statuStaffArray = Array.isArray(statuStaff) ? statuStaff : []; 
-                    // const updatePromises = [];  // Array to store promises
-
-                    // statuStaffArray.forEach(item => {
-                    //     const promise = new Promise((resolve, reject) => {
-                    //         const fieldsbene = `insurance_id_fk,no_contract,user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village,status_use`;
-                    //         let user_dob = '';
-                    //         if (item.user_dob) {
-                    //             user_dob = moment(item.user_dob).format('YYYY-MM-DD');
-                    //         }
-                    //         const databene = [incuranec_code,item.no_contract,item.user_fname, item.user_lname, item.user_gender, user_dob, item.user_tel, item.user_district_fk, item.user_village,item.status_use];
-                    //         db.insertData('oac_beneficiaries', fieldsbene, databene, (err, results) => {
-                    //             if (err) {
-                    //                 reject(err);
-                    //             } else {
-                    //                 resolve(results);
-                    //             }
-                    //         })
-                    //     });
-                    //     updatePromises.push(promise);
-                    // });
-
-                    // Promise.all(updatePromises).then(results => {
-                    //     res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ' });
-                    // })
-                    // .catch(err => {
-                    //     console.error('Error inserting data:', err);
-                    //     res.status(500).json({ message: 'ການແກ້ໄຂຂໍ້ມູນບໍ່ສຳເລັດ' });
-                    // });
+                    if (user_fname && user_fname !== '') {
+                        const databene = [incuranec_code, no_contract, user_fname, user_lname, user_gender, userdob, user_tel, user_district_fk, user_village, status_use];
+                        db.insertData('oac_beneficiaries', fieldsbene, databene, (err, results) => {
+                            if (err) {
+                                return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                            }
+                        })
+                    }
 
                     console.log('Data updated successfully:', results);
                     res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ', data: results });
@@ -320,7 +282,7 @@ router.post("/create", function (req, res) {
         }
     });
 });
-
+//============== ລົງທະບຽນຕໍ່ສັນຍາ
 
 router.post("/renew", function (req, res) {
     let fileName = '';
@@ -339,27 +301,43 @@ router.post("/renew", function (req, res) {
         const { incuranecCode, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, currency_id_fk, contract_number, user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village } = req.body;
         const { statusIns, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number } = req.body;
         const {
-            percent_taxes,
-            precent_incom,
-            percent_akorn,
-            percent_eps,
-            percent_fee_eps,
+            percent_taxes, //ອາກອນ
+            precent_incom, //ເປີເຊັນ ຮັບ
+            percent_akorn, //ອ/ກ.ຮັບ c
+            percent_eps, //ເປີເຊັນ ຈ່າຍ
+            percent_fee_eps,//ອ/ກ.ຈ່າຍ
             status_company,
             status_agent,
             status_oac
         } = req.body;
 
-        const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));
-        const money_taxes = parseFloat(req.body.money_taxes.replace(/,/g, ''));
-        const registration_fee = req.body.registration_fee;
-        const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));
-        const pre_tax_profit = parseFloat(req.body.pre_tax_profit.replace(/,/g, ''));
-        const incom_money = parseFloat(req.body.incom_money.replace(/,/g, ''));
-        const incom_finally = parseFloat(req.body.incom_finally.replace(/,/g, ''));
-        const pays_advance_fee = parseFloat(req.body.pays_advance_fee.replace(/,/g, ''));
-        const money_percent_fee = parseFloat(req.body.money_percent_fee.replace(/,/g, ''));
-        const expences_pays_taxes = parseFloat(req.body.expences_pays_taxes.replace(/,/g, ''));
-        const net_income = parseFloat(req.body.net_income.replace(/,/g, ''));
+        // const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));
+        // const money_taxes = parseFloat(req.body.money_taxes.replace(/,/g, ''));
+        // const registration_fee = req.body.registration_fee;
+        // const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));
+        // const pre_tax_profit = parseFloat(req.body.pre_tax_profit.replace(/,/g, ''));
+        // const incom_money = parseFloat(req.body.incom_money.replace(/,/g, ''));
+        // const incom_finally = parseFloat(req.body.incom_finally.replace(/,/g, ''));
+        // const pays_advance_fee = parseFloat(req.body.pays_advance_fee.replace(/,/g, ''));
+        // const money_percent_fee = parseFloat(req.body.money_percent_fee.replace(/,/g, ''));
+        // const expences_pays_taxes = parseFloat(req.body.expences_pays_taxes.replace(/,/g, ''));
+        // const net_income = parseFloat(req.body.net_income.replace(/,/g, ''));
+
+        const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));//ຄ່າທຳນຽມເບື້ອງຕົ້ນ
+        const money_taxes = (initial_fee * percent_taxes) / 100; //----- ຄ່າອາກອນ
+        const registration_fee = parseFloat(req.body.registration_fee.replace(/,/g, '')); //ຄ່າລົງທະບຽນ
+        const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));//ຄ່າທຳນຽມປະກັນໄພລວມ
+
+        const pre_tax_profit = (initial_fee * precent_incom) / 100; //----- ຄອມກ່ອນອາກອນ
+        const incom_money = (pre_tax_profit * percent_akorn) / 100; //-- ອ.ກ ລາຍໄດ້  (ຄອມຮັບ)
+        const incom_finally = (pre_tax_profit - incom_money); //-- ຄອມຫຼັງຫັກອາກອນ
+
+        const pays_advance_fee = (initial_fee * percent_eps) / 100; //-------ຄອມຈ່າຍກ່ອນອາກອນ
+        const money_percent_fee = (pays_advance_fee * percent_fee_eps) / 100; //---ອ.ກ ລາຍໄດ້ (ຄອມຈ່າຍ)
+        const expences_pays_taxes = (pays_advance_fee - money_percent_fee); //----ຄອມຈ່າຍຫຼັງຫັກອາກອນ
+
+        const net_income = (incom_finally - expences_pays_taxes);//--ລາຍຮັບສຸທິ
+
 
         const contract_start_date = moment(req.body.contract_start_date).format('YYYY-MM-DD');
         const contract_end_date = moment(req.body.contract_end_date).format('YYYY-MM-DD');
@@ -375,8 +353,8 @@ router.post("/renew", function (req, res) {
         const tableInsurance = 'oac_action_insurance';
         const tableCar = 'oac_cars_insurance';
         db.autoId(tableins, 'incuranec_code', (err, incuranec_code) => { //========== ລົງທະບຽນບັນທຶກຕໍ່ສັນຍາໃໝ່
-            const fieldsct = 'incuranec_code, custom_id_fk,company_id_fk,agent_id_fk,option_id_fk,contract_number,contract_start_date,contract_end_date,contract_status,user_fname,user_lname,user_gender,user_dob,user_tel,user_district_fk,user_village,status_check,status_change,create_date';
-            const datact = [incuranec_code, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, contract_number, contract_start_date, contract_end_date, '1', user_fname, user_lname, user_gender, userDob, user_tel, user_district_fk, user_village, '1', '1', dateTime];
+            const fieldsct = 'incuranec_code, custom_id_fk,company_id_fk,agent_id_fk,option_id_fk,contract_number,contract_start_date,contract_end_date,contract_status,status_check,status_change,create_date';
+            const datact = [incuranec_code, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, contract_number, contract_start_date, contract_end_date, '1', '1', '1', dateTime];
             db.insertData(tableins, fieldsct, datact, (err, results) => {
                 if (err) {
                     console.error('Error inserting data:', err);
@@ -461,6 +439,22 @@ router.post("/renew", function (req, res) {
                         }
                     });
                 });
+
+                // ============ ຈັດການຜູ້ໄດ້ຮັບຄວາມຄຸມຄ້ອງ ==========
+                const fieldBenne = `insurance_id_fk, no_contract, user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village, status_use`;
+                const whereBene = `insurance_id_fk='${incuranecCode}'`;
+                db.selectWhere('oac_beneficiaries', '*', whereBene, (err, resBsene) => {
+                    if (resBsene && resBsene.length > 0) {
+                        resBsene.forEach(row => {
+                            const dataBene = [incuranec_code, row.no_contract, row.user_fname, row.user_lname, row.user_gender, row.user_dob, row.user_tel, row.user_district_fk, row.user_village, row.status_use];
+                            db.insertData('oac_beneficiaries', fieldBenne, dataBene, (err, resultsIn) => {
+                                if (err) {
+                                    console.error('Error inserting data:', err);
+                                }
+                            });
+                        });
+                    }
+                })
 
                 //============= ອັບເດດສັນຍາເກົ່າ
                 const fieldeEd = 'insurance_new_id,contract_status';

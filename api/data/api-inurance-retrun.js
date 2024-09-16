@@ -27,9 +27,12 @@ router.post("/create", function (req, res) {
 
         const { insurance_retrunId, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text } = req.body;
         const retrun_balance = parseFloat(req.body.retrun_balance.replace(/,/g, ''));
+        const companyDate=moment(company_date).format('YYYY-MM-DD');
+        const agentDate=moment(agent_date).format('YYYY-MM-DD');
+        const oacDate=moment(oac_date).format('YYYY-MM-DD');
         if (!insurance_retrunId) {
             const fields = 'insurance_retrun_id, company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text,register_date,file_doc';
-            const data = [insurance_retrun_id, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date,percent_oac, status_oac, oac_date, remark_text, dateTime,fileName];
+            const data = [insurance_retrun_id, company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number, retrun_balance, currency_id_fk, status_company, companyDate,percent_agent, status_agent, agentDate,percent_oac, status_oac, oacDate, remark_text, dateTime,fileName];
             
             db.insertData(table, fields, data, (err, results) => {
                 if (err) {
@@ -56,7 +59,7 @@ router.post("/create", function (req, res) {
                     filedoc = fileName;
                 }
             const fields = 'company_id_fk,agent_id_fk,custom_buyer_id_fk,option_id_fk,contract_number,retrun_balance,currency_id_fk,status_company,company_date,percent_agent,status_agent,agent_date,percent_oac,status_oac,oac_date,remark_text,file_doc';
-            const newData = [company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number,retrun_balance, currency_id_fk, status_company, company_date,percent_agent, status_agent, agent_date, percent_oac,status_oac, oac_date, remark_text,filedoc, insurance_retrunId];
+            const newData = [company_id_fk, agent_id_fk, custom_buyer_id_fk, option_id_fk, contract_number,retrun_balance, currency_id_fk, status_company, companyDate,percent_agent, status_agent, agentDate, percent_oac,status_oac, oacDate, remark_text,filedoc, insurance_retrunId];
             const condition = 'insurance_retrun_id=?';
             db.updateData(table, fields, newData, condition, (err, results) => {
                 if (err) {

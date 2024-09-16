@@ -20,7 +20,7 @@ const useDepart=require('./api/setting/api-department');
 const useAgent=require('./api/data/api-agent-sale');
 const usePorvince=require('./api/setting/api-province');
 const useDistrict=require('./api/setting/api-district')
-const useInsurance=require('./api/data/api-insurance');
+const useInsurance=require('./api/data/api-insurance-v2');
 const useCustom=require('./api/data/api-custom-buyer');
 const useRerport=require('./api/reports/report-insurance')
 const useRerportDebt=require('./api/reports/report-insurance-debt');
@@ -31,6 +31,7 @@ const useRetrunIn=require('./api/data/api-inurance-retrun');
 const useUpload=require('./api/data/uploadfile');
 const useComisget=require('./api/data/api-setcomision');
 const useComispay=require('./api/data/api-comisionpay');
+const useStatus=require('./api/setting/status-insurance');
 const useLogin=require('./api/checklogin');
 //===================== use router
 app.use('/typecar',typeCars);
@@ -55,6 +56,7 @@ app.use('/retrun',useRetrunIn);
 app.use('/upload',useUpload);
 app.use('/comisget',useComisget);
 app.use('/comispay',useComispay);
+app.use('/status',useStatus);
 app.use('/login',useLogin);
 
 const PORT = process.env.PORT || 3030;

@@ -10,9 +10,11 @@ router.patch("/", function (req, res) {
         res.status(200).json(results);
     });
 });
+
+
 router.get("/:id", function (req, res) {
     const id= req.params.id;
-    const where=`districtid=${id}`;
+    const where=`district_id=${id}`;
     db.fetchSingleAll('oac_district', where,(err, results) => {
         if (err) {
             return res.status(400).send();
@@ -20,6 +22,7 @@ router.get("/:id", function (req, res) {
         res.status(200).json(results);
     });
 });
+
 router.get("/pv/:id", function (req, res) {
     const pvid= req.params.id;
     const where=`provice_fk=${pvid}`;

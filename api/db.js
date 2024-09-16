@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
     host: '45.77.241.213',
     user: 'root',
     password: 'plc@2023*.com',
-    database: 'insurance_info'
+    database: 'info'
 });
 const autoId = (table, fields, callback) => {
     const maxId = new Date().getFullYear() + '001';

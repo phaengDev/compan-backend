@@ -24,7 +24,7 @@ router.post("/create", async function (req, res) {
     const upload = multer({ storage }).single('docom_file');
     upload(req, res, function (err) {
         const { contract_code_fk, contract_no, status_pay, status_doc, debt_remark, doccm_date } = req.body;
-        const doccmDate = moment(doccm_date).format('YYYY-MM-DD HH:mm:ss')
+        const doccmDate = moment(doccm_date).format('YYYY-MM-DD HH:mm:ss');
         const fieldsct = 'contract_code_fk,contract_no,docom_file,status_pay,status_doc,debt_remark,doccm_date';
         const datact = [contract_code_fk, contract_no, fileName, status_pay, status_doc, debt_remark, doccmDate];
         db.insertData(table, fieldsct, datact, (err, results) => {
@@ -142,11 +142,6 @@ router.post("/report", async function (req, res) {
     view_insurance_all.status_check,
     view_insurance_all.status_change,
     view_insurance_all.create_date,
-    view_insurance_all.user_fname,
-    view_insurance_all.user_lname,
-    view_insurance_all.user_gender,
-    view_insurance_all.user_dob,
-    view_insurance_all.user_tel,
     view_insurance_all.customer_name,
     view_insurance_all.initial_fee,
     view_insurance_all.percent_taxes,
@@ -172,7 +167,7 @@ router.post("/report", async function (req, res) {
     options_name,
     com_name_lao,
     com_name_eng`;
-    const wheres = `status_doc='${status_doc}' AND DATE(doccm_date) BETWEEN '${startDate}' AND '${endDate}' ${conditions}`;
+    const wheres = `status_doc='${status_doc}' AND DATE(doccm_date) BETWEEN '${startDate}' AND '${endDate}' ${conditions} `;
     db.selectWhere(tables, fields, wheres, (err, results) => {
         if (err) {
             return res.status(400).send();
