@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const currentDatetime = moment();
 const dateTime = currentDatetime.format('YYYY-MM-DD HH:mm:ss');
+
 router.post("/check", function(req, res) {
     const table = 'oac_user_account'; 
     const userPassword = req.body.userPassword; 
@@ -29,7 +30,6 @@ router.post("/check", function(req, res) {
                     message: "ຫັດຜ່ານບໍ່ຖືກຕ້ອງ"
                 });
             }
-
             // Sign a new JWT token
             const payload = {
                 user_Id: results.user_Id,

@@ -140,7 +140,7 @@ router.get("/buy", function (req, res) {
 	customer_name,
     company_agent_fk`;
     const tables=`oac_user_account
-    LEFT JOIN oac_custom_buyer on oac_user_account.company_agent_fk=oac_custom_buyer.customer_Id`;
+    LEFT JOIN oac_custom_buyer on oac_user_account.company_agent_fk=oac_custom_buyer.custom_uuid`;
     db.selectWhere(tables,fields,where,(err, results) => {
         if (err) {
             return res.status(400).send('ການສະແດງຂໍ້ມູນລົມເຫຼວ');

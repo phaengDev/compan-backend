@@ -29,7 +29,7 @@ let conditions=`${datePays} ${companyId_fk} ${agentId_fk}`;
     const tables = `view_insurance_all`;
     const fields = `*`;
     const wheres = `contract_status='1' AND status_company='${status_pay}' ${conditions}`;
-    const fieldFile=`*,SUBSTRING_INDEX(file_insurance, '.', -1) AS ext_name`;
+    const fieldFile=`*`;
     db.selectWhere(tables, fields, wheres, (err, results) => {
         if (err) {
             return res.status(400).send();
@@ -87,7 +87,7 @@ if (company_id_fk) {
     const tables = `view_insurance_all`;
     const fields = `*,ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto`;
     const wheres = `contract_status='1' AND  status_agent='${status_pay}' ${conditions}`;
-    const fieldFile=`*,SUBSTRING_INDEX(file_insurance, '.', -1) AS ext_name`;
+    const fieldFile=`*`;
     db.selectWhere(tables, fields, wheres, (err, results) => {
         if (err) {
             return res.status(400).send();
@@ -149,7 +149,7 @@ let conditions=`${datePays} ${companyId_fk} ${agentId_fk}`;
     const tables = `view_insurance_all`;
     const fields = `*`;
     const wheres = `contract_status='1' AND status_oac='${status_pay}' ${conditions}`;
-    const fieldFile=`*,SUBSTRING_INDEX(file_insurance, '.', -1) AS ext_name`;
+    const fieldFile=`*`;
     db.selectWhere(tables, fields, wheres, (err, results) => {
         if (err) {
             return res.status(400).send();

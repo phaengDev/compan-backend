@@ -559,7 +559,7 @@ router.get("/viewBuy/:id", function (req, res) {
     const fields = `incuranec_code,contract_number,contract_start_date,contract_end_date,agent_name,com_name_lao,type_in_name,options_name`;
     const wheres = `contract_status='1' AND custom_id_fk='${customId}'`;
 
-    const fieldFile = `*,SUBSTRING_INDEX(file_insurance, '.', -1) AS ext_name`; //======== filed file
+    const fieldFile = `*`; //======== filed file
 
     db.selectWhere(tables, fields, wheres, (err, results) => {
         if (err) {
