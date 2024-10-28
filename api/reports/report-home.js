@@ -8,12 +8,12 @@ const year = currentDatetime.format('YYYY');
 router.post("/balanch", function (req, res) {
     const {user_type,companyId} = req.body;
 let company_agent_fk='';
-if(user_type===2){
+if(user_type==='2'){
     company_agent_fk=`AND agent_id_fk=${companyId}`;
-}else if(user_type===3){
+}else if(user_type==='3'){
     company_agent_fk=`AND custom_id_fk=${companyId}`;
 }
-else if(user_type===4){
+else if(user_type==='4'){
     company_agent_fk=`AND company_id_fk=${companyId}`;
 }
 
@@ -134,8 +134,7 @@ router.get('/chartAgent/:id', (req, res) => {
 LEFT JOIN oac_insurance ON MONTH(contract_start_date) = MONTH(DATE_ADD(NOW(), INTERVAL n MONTH)) AND  EXTRACT(YEAR FROM contract_start_date) = EXTRACT(YEAR FROM CURRENT_DATE)
  LEFT JOIN oac_action_insurance ON oac_insurance.incuranec_code=oac_action_insurance.contract_code_fk 
  LEFT JOIN oac_currency ON oac_action_insurance.currency_id_fk=oac_currency.currency_id 
-WHERE agent_id_fk=${agent_id_fk} GROUP BY MonthNumber
-        ORDER BY MonthNumber`;
+WHERE agent_id_fk=${agent_id_fk} GROUP BY MonthNumber  ORDER BY MonthNumber`;
     const fields=`MONTH(DATE_ADD(NOW(), INTERVAL n MONTH)) AS MonthNumber,
 		 COALESCE(SUM(insuranc_included*reate_price),0) AS insuranc_included,  COALESCE(SUM(expences_pays_taxes*reate_price),0) as expences_pays_taxes`;
     db.selectData(tables,fields, (err, results) => {
@@ -156,6 +155,47 @@ WHERE agent_id_fk=${agent_id_fk} GROUP BY MonthNumber
 
             res.json({ series });
 
+        }
+    });
+});
+  
+
+
+// API Endpoint to fetch chart data
+router.get('/chartBuy/:id', (req, res) => {
+    const custom_id_fk=req.params.id;
+    const tables = `(
+    SELECT 0 AS n UNION ALL
+    SELECT 1 UNION ALL
+    SELECT 2 UNION ALL
+    SELECT 3 UNION ALL
+    SELECT 4 UNION ALL
+    SELECT 5 UNION ALL
+    SELECT 6 UNION ALL
+    SELECT 7 UNION ALL
+    SELECT 8 UNION ALL
+    SELECT 9 UNION ALL
+    SELECT 10 UNION ALL
+    SELECT 11
+) AS months
+LEFT JOIN oac_insurance ON MONTH(contract_start_date) = MONTH(DATE_ADD(NOW(), INTERVAL n MONTH)) AND  EXTRACT(YEAR FROM contract_start_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+LEFT JOIN oac_action_insurance ON oac_insurance.incuranec_code=oac_action_insurance.contract_code_fk 
+LEFT JOIN oac_currency ON oac_action_insurance.currency_id_fk=oac_currency.currency_id 
+WHERE custom_id_fk=${custom_id_fk} GROUP BY MonthNumber  ORDER BY MonthNumber`;
+    const fields=`MONTH(DATE_ADD(NOW(), INTERVAL n MONTH)) AS MonthNumber,
+    COALESCE(SUM(insuranc_included*reate_price),0) AS insuranc_included`;
+    db.selectData(tables,fields, (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Failed to fetch data' });
+        } else {
+            const series = [
+                {
+                    name: 'ລວມຍອດຊື້ປະກັນ',
+                    data: results.map(row => row.insuranc_included)
+                },
+            ];
+            res.json({ series });
         }
     });
 });

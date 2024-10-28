@@ -124,6 +124,23 @@ router.get("/fetch", function (req, res) {
     });
 });
 
+router.get("/cust/:id", function (req, res) {
+    const custId=req.params.id;
+    const tables=`oac_insurance
+	LEFT JOIN oac_company ON oac_insurance.company_id_fk = oac_company.company_Id`;
+    const fields=`company_Id,oac_company.com_logo, 
+	oac_company.com_name_lao, 
+	oac_company.com_name_eng`;
+    const wheres=`oac_insurance.custom_id_fk='${custId}' GROUP BY company_id_fk`;
+    db.selectWhere(tables,fields,wheres, (err, results) => {
+        if (err) {
+            return res.status(400).send('ການສະແດງຂໍ້ມູນລົມເຫຼວ');
+        }
+        res.status(200).json(results);
+    });
+});
+
+
 
 router.patch("/:id", function (req, res) {
     const id = req.params.id;

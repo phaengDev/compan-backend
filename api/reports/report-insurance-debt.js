@@ -8,7 +8,7 @@ router.post("/company", function (req, res) {
    const endDate=moment(end_date).format('YYYY-MM-DD');
    const datePays='';
 if(start_date && end_date){
-    if(status_pay===1){
+    if(status_pay==='1'){
         datePays =`AND contract_start_date BETWEEN '${startDate}' AND '${endDate}'`;
     }else{
         datePays =`AND company_date BETWEEN '${startDate}' AND '${endDate}'`;

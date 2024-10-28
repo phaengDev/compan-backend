@@ -51,6 +51,23 @@ router.get("/", function (req, res) {
     });
 });
 
+
+router.get("/cust/:id", function (req, res) {
+    const custId=req.params.id;
+    const tables = `oac_insurance
+	LEFT JOIN oac_agent_sale ON  oac_insurance.agent_id_fk = oac_agent_sale.agent_Id`;
+    const field = `oac_agent_sale.agent_name, 
+	oac_agent_sale.agent_Id,(SELECT COUNT(agent_id_fk) FROM oac_insurance WHERE agent_id_fk=agent_Id) AS qtycontart`;
+    const wheres=`agent_status='1' AND oac_insurance.custom_id_fk='${custId}' GROUP BY agent_id_fk`;
+    db.selectWhere(tables, field,wheres, (err, results) => {
+        if (err) {
+            return res.status(400).send();
+        }
+        res.status(200).json(results);
+    });
+});
+
+
 router.get("/option", function (req, res, next) {
     const tables = `oac_agent_sale`;
     db.selectAll(tables, (err, results) => {
