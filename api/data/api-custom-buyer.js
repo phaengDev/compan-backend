@@ -128,7 +128,7 @@ router.get("/cm/:id", function (req, res) {
 
 
 router.post("/", function (req, res) {
-    const {provinceId,districtId,type_buyerId} = req.body;
+    const {provinceId,districtId,type_buyerId,companyId} = req.body;
     let province_fk='';
     if(provinceId){
         province_fk=`AND province_fk='${provinceId}'`;
@@ -141,7 +141,10 @@ router.post("/", function (req, res) {
     if(type_buyerId){
         type_buyer_fk=`AND type_buyer_fk='${type_buyerId}'`;
     }
+    const company_id_fk = companyId ? `AND company_id_fk = ${companyId}` : '';
+
     const tables = `oac_custom_buyer
+	LEFT JOIN oac_insurance ON oac_custom_buyer.custom_uuid=oac_insurance.custom_id_fk
     LEFT JOIN oac_district ON oac_custom_buyer.district_fk=oac_district.district_id
     LEFT JOIN oac_province ON oac_district.provice_fk=oac_province.province_id`;
     const field = `
@@ -154,11 +157,11 @@ router.post("/", function (req, res) {
     village_name,
     registra_tel,
     status_changs,
-    create_date,
+    oac_custom_buyer.create_date,
     district_name,
     province_name,
     (SELECT COUNT(custom_id_fk) FROM oac_insurance WHERE custom_id_fk=custom_uuid) AS qtycontart`;
-    const wheres=`status_changs='1' ${type_buyer_fk} ${province_fk} ${district_fk}`;
+    const wheres=`status_changs='1' ${type_buyer_fk} ${province_fk} ${district_fk} ${company_id_fk} GROUP BY custom_uuid`;
     db.selectWhere(tables, field,wheres, (err, results) => {
         if (err) {
             return res.status(400).send();

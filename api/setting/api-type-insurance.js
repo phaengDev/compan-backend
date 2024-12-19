@@ -80,6 +80,21 @@ router.get("/cust/:id", function (req, res) {
     });
 });
 
+router.get("/cm/:id", function (req, res) {
+    const cmId=req.params.id;
+    const tables=`oac_insurance
+	LEFT JOIN oac_insurance_options ON oac_insurance.option_id_fk = oac_insurance_options.options_Id
+	LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk = oac_type_insurance.type_insid`;
+    const  field=`type_insid,status_ins,type_in_name`;
+    const wheres=`oac_insurance.company_id_fk ='${cmId}'  GROUP BY insurance_type_fk`
+    db.selectWhere(tables,field,wheres,(err, results) => {
+        if (err) {
+            return res.status(400).send('ການສະແດງຂໍ້ມູນລົມເຫຼວ');
+        }
+        res.status(200).json(results);
+    });
+});
+
 
 
 router.get("/s/:id", function (req, res) {

@@ -732,6 +732,18 @@ router.delete('/bene/:id', function (req, res) {
         console.log('Data inserted successfully:', results);
         res.status(200).json({ message: 'ການດຳເນີນງານສຳເລັດແລ້ວ' });
     });
-})
+});
+
+
+router.post('/contract', function (req, res) {
+const {contractNumber,statusUse} = req.body;
+const wheres = `contract_number LIKE '%${contractNumber}%' AND contract_status = '${statusUse}'`;
+db.selectWhere('oac_insurance', '*', wheres, (err, results) => {
+    if (err) {
+        return res.status(400).send();
+    }
+    res.status(200).json(results);
+});
+});
 
 module.exports = router

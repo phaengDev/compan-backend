@@ -366,6 +366,7 @@ router.post("/renew", function (req, res) {
         const company_date = moment(req.body.company_date).format('YYYY-MM-DD');
         const agent_date = moment(req.body.agent_date).format('YYYY-MM-DD');
         const oac_date = moment(req.body.oac_date).format('YYYY-MM-DD');
+        
         let userDob = '';
         if (user_dob) {
             userDob = moment(user_dob).format('YYYY-MM-DD');
