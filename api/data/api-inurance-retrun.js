@@ -5,6 +5,7 @@ const moment = require('moment');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { result } = require('lodash');
 const currentDatetime = moment();
 const dateNow = currentDatetime.format('YYYY-MM-DD');
 const dateTime = currentDatetime.format('YYYY-MM-DD HH:mm:ss');
@@ -114,23 +115,23 @@ router.post('/retrun', (req, res) => {
         const fields = `${fieldEdit}, remark_text`;
         const newData = [2, dateRetrun, remark_text, insurance_retrun_id];
         const condition = 'insurance_retrun_id = ?';
-       // ===================== filse list =======
-       const fieldsFile = 'contract_id_fk,status_pay,file_doct';
-       const dataFile = [insurance_retrun_id, status_pay, fileNamePay];
-       //================================\\===========
+        // ===================== filse list =======
+        const fieldsFile = 'contract_id_fk,status_pay,file_doct,desciption,file_dates';
+        const dataFile = [insurance_retrun_id, status_pay, fileNamePay, remark_text, dateTime];
+        //================================\\===========
         db.updateData('oac_insurance_retrun', fields, newData, condition, (err, results) => {
-        if (err) {
-            console.error('Error updating data:', err);
-            return res.status(500).json({ error: 'Failed to update data.' });
-        }
-            
+            if (err) {
+                console.error('Error updating data:', err);
+                return res.status(500).json({ error: 'Failed to update data.' });
+            }
+
             db.insertData('tbl_filepay_refund', fieldsFile, dataFile, (err, results) => {
                 if (err) {
                     console.error('Error inserting data:', err);
                     return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
                 }
                 // console.log('Data updated successfully:', results);
-                res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ'});
+                res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ' });
             });
         });
     });
@@ -139,33 +140,41 @@ router.post('/retrun', (req, res) => {
 
 
 
-    router.post("/", function (req, res) {
-        const { start_date, end_date, agentId_fk, companyId_fk, insurance_typeId, custom_buyerId_fk,option_id_fk } = req.body;
-        const startDate = moment(start_date).format('YYYY-MM-DD');
-        const endDate = moment(end_date).format('YYYY-MM-DD');
-        let agent_id_fk = '';
-        if (agentId_fk) {
-            agent_id_fk = `AND agent_id_fk='${agentId_fk}'`;
-        }
-        let company_id_fk = '';
-        if (companyId_fk) {
-            company_id_fk = `AND company_id_fk='${companyId_fk}'`;
-        }
-        let insurance_type_fk = '';
-        if (insurance_typeId) {
-            insurance_type_fk = `AND insurance_type_fk='${insurance_typeId}'`;
-        }
-        let custom_buyer_id_fk = '';
-        if (custom_buyerId_fk) {
-            custom_buyer_id_fk = `AND custom_buyer_id_fk='${custom_buyerId_fk}'`;
-        }
+router.post("/", function (req, res) {
+    const { start_date, end_date, agentId_fk, companyId_fk, insurance_typeId, custom_buyerId_fk, option_id_fk, status } = req.body;
+    const startDate = moment(start_date).format('YYYY-MM-DD');
+    const endDate = moment(end_date).format('YYYY-MM-DD');
+    let agent_id_fk = '';
+    if (agentId_fk) {
+        agent_id_fk = `AND agent_id_fk='${agentId_fk}'`;
+    }
+    let company_id_fk = '';
+    if (companyId_fk) {
+        company_id_fk = `AND company_id_fk='${companyId_fk}'`;
+    }
+    let insurance_type_fk = '';
+    if (insurance_typeId) {
+        insurance_type_fk = `AND insurance_type_fk='${insurance_typeId}'`;
+    }
+    let custom_buyer_id_fk = '';
+    if (custom_buyerId_fk) {
+        custom_buyer_id_fk = `AND custom_buyer_id_fk='${custom_buyerId_fk}'`;
+    }
 
-        let optionId_fk = '';
-        if (option_id_fk) {
-            optionId_fk = `AND oac_insurance_retrun.option_id_fk='${option_id_fk}'`;
-        }
+    let optionId_fk = '';
+    if (option_id_fk) {
+        optionId_fk = `AND oac_insurance_retrun.option_id_fk='${option_id_fk}'`;
+    }
+    let statusPay = '';
+    if (status) {
+        statusPay = `AND status_company = ${status}
+            AND status_agent = ${status}
+            AND status_oac = ${status}`;
+    } else {
+        statusPay = ``;
+    }
 
-        const tables = `oac_insurance_retrun
+    const tables = `oac_insurance_retrun
                     LEFT JOIN oac_agent_sale ON oac_insurance_retrun.agent_id_fk=oac_agent_sale.agent_Id
                     LEFT JOIN oac_insurance_options ON oac_insurance_retrun.option_id_fk=oac_insurance_options.options_Id
                     LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk=oac_type_insurance.type_insid
@@ -174,7 +183,7 @@ router.post('/retrun', (req, res) => {
                     LEFT JOIN oac_district ON oac_custom_buyer.district_fk=oac_district.district_id
                     LEFT JOIN oac_province ON oac_district.provice_fk=oac_province.province_id
                     LEFT JOIN oac_currency ON oac_insurance_retrun.currency_id_fk=oac_currency.currency_id`;
-        const field = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
+    const field = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
                     insurance_retrun_id,
                     company_id_fk,
                     agent_id_fk,
@@ -221,94 +230,96 @@ router.post('/retrun', (req, res) => {
                     province_name,
                     currency_name,
                     genus`;
-        const wheres = `DATE(register_date) BETWEEN '${startDate}' AND '${endDate}' ${agent_id_fk} ${company_id_fk} ${insurance_type_fk} ${custom_buyer_id_fk} ${optionId_fk}`;
-        db.selectWhere(tables, field, wheres, (err, results) => {
-            if (err) {
-                return res.status(400).send();
-            }
-            const promises = results.map(contract => {
-                const whereDoc = `contract_id_fk = '${contract.insurance_retrun_id}'`;
+    const wheres = `DATE(register_date) BETWEEN '${startDate}' AND '${endDate}' ${agent_id_fk} ${company_id_fk} ${insurance_type_fk} ${custom_buyer_id_fk} ${optionId_fk} ${statusPay}`;
+    db.selectWhere(tables, field, wheres, (err, results) => {
+        if (err) {
+            return res.status(400).send();
+        }
+        const promises = results.map(contract => {
+            const whereDoc = `contract_id_fk = '${contract.insurance_retrun_id}'`;
 
-                return new Promise((resolve, reject) => {
-                    db.selectWhere('tbl_filepay_refund','*', whereDoc, (err, resultsDoc) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        contract.file_pay = resultsDoc.length ? resultsDoc : [];
-                        resolve(contract);
-                    });
+            return new Promise((resolve, reject) => {
+                db.selectWhere('tbl_filepay_refund', '*', whereDoc, (err, resultsDoc) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    contract.file_pay = resultsDoc.length ? resultsDoc : [];
+                    resolve(contract);
                 });
             });
-                Promise.all(promises)
-                    .then(updatedResults => {
-                        res.status(200).json(updatedResults);
-                    })
-                    .catch(error => {
-                        res.status(400).send();
-                    });
-            // res.status(200).json(results);
         });
+        Promise.all(promises)
+            .then(updatedResults => {
+                res.status(200).json(updatedResults);
+            })
+            .catch(error => {
+                res.status(400).send();
+            });
+        // res.status(200).json(results);
     });
+});
 
-    router.post("/report", function (req, res) {
-        const {
-            status,
-            statusRetrun,
-            datecheck,
-            start_date,
-            end_date,
-            agentId_fk,
-            companyId_fk,
-            insurance_typeId,
-            custom_buyerId_fk,
-            option_id_fk
-        } = req.body;
 
-        const startDate = start_date ? moment(start_date).format('YYYY-MM-DD') : null;
-        const endDate = end_date ? moment(end_date).format('YYYY-MM-DD') : null;
 
-        let statusUse = '';
-        if (statusRetrun) {
-            if (status === 1) {
-                statusUse = `AND status_company = ${statusRetrun}`;
-            } else if (status === 2) {
-                statusUse = `AND status_agent = ${statusRetrun}`;
-            } else if (status === 3) {
-                statusUse = `AND status_oac = ${statusRetrun}`;
-            }
+router.post("/report", function (req, res) {
+    const {
+        status,
+        statusRetrun,
+        datecheck,
+        start_date,
+        end_date,
+        agentId_fk,
+        companyId_fk,
+        insurance_typeId,
+        custom_buyerId_fk,
+        option_id_fk
+    } = req.body;
+
+    const startDate = start_date ? moment(start_date).format('YYYY-MM-DD') : null;
+    const endDate = end_date ? moment(end_date).format('YYYY-MM-DD') : null;
+
+    let statusUse = '';
+    if (statusRetrun) {
+        if (status === 1) {
+            statusUse = `AND  status_company= ${statusRetrun}`;
+        } else if (status === 2) {
+            statusUse = `AND status_agent = ${statusRetrun}`;
+        } else if (status === 3) {
+            statusUse = `AND status_oac = ${statusRetrun}`;
         }
+    }
 
-        let dateSearch = '';
-        if (startDate && endDate) {
-            dateSearch = `AND ${datecheck} BETWEEN '${startDate}' AND '${endDate}'`;
-        }
+    let dateSearch = '';
+    if (startDate && endDate) {
+        dateSearch = `AND ${datecheck} BETWEEN '${startDate}' AND '${endDate}'`;
+    }
 
-        let agent_id_fk = '';
-        if (agentId_fk) {
-            agent_id_fk = `AND agent_id_fk = '${agentId_fk}'`;
-        }
+    let agent_id_fk = '';
+    if (agentId_fk) {
+        agent_id_fk = `AND agent_id_fk = '${agentId_fk}'`;
+    }
 
-        let company_id_fk = '';
-        if (companyId_fk) {
-            company_id_fk = `AND company_id_fk = '${companyId_fk}'`;
-        }
+    let company_id_fk = '';
+    if (companyId_fk) {
+        company_id_fk = `AND company_id_fk = '${companyId_fk}'`;
+    }
 
-        let insurance_type_fk = '';
-        if (insurance_typeId) {
-            insurance_type_fk = `AND insurance_type_fk = '${insurance_typeId}'`;
-        }
+    let insurance_type_fk = '';
+    if (insurance_typeId) {
+        insurance_type_fk = `AND insurance_type_fk = '${insurance_typeId}'`;
+    }
 
-        let custom_buyer_id_fk = '';
-        if (custom_buyerId_fk) {
-            custom_buyer_id_fk = `AND custom_buyer_id_fk = '${custom_buyerId_fk}'`;
-        }
+    let custom_buyer_id_fk = '';
+    if (custom_buyerId_fk) {
+        custom_buyer_id_fk = `AND custom_buyer_id_fk = '${custom_buyerId_fk}'`;
+    }
 
-        let optionId_fk = '';
-        if (option_id_fk) {
-            optionId_fk = `AND oac_insurance_retrun.option_id_fk='${option_id_fk}'`;
-        }
+    let optionId_fk = '';
+    if (option_id_fk) {
+        optionId_fk = `AND oac_insurance_retrun.option_id_fk='${option_id_fk}'`;
+    }
 
-        const tables = `oac_insurance_retrun
+    const tables = `oac_insurance_retrun
         LEFT JOIN oac_agent_sale ON oac_insurance_retrun.agent_id_fk = oac_agent_sale.agent_Id
         LEFT JOIN oac_insurance_options ON oac_insurance_retrun.option_id_fk = oac_insurance_options.options_Id
         LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk = oac_type_insurance.type_insid
@@ -318,7 +329,7 @@ router.post('/retrun', (req, res) => {
         LEFT JOIN oac_province ON oac_district.provice_fk = oac_province.province_id
         LEFT JOIN oac_currency ON oac_insurance_retrun.currency_id_fk = oac_currency.currency_id`;
 
-        const fields = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
+    const fields = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
         insurance_retrun_id,
         company_id_fk,
         agent_id_fk,
@@ -365,98 +376,123 @@ router.post('/retrun', (req, res) => {
         province_name,
         currency_name,
         genus`;
-        let wheres = `agent_status = '1' ${statusUse} ${dateSearch} ${agent_id_fk} ${company_id_fk} ${insurance_type_fk} ${custom_buyer_id_fk} ${optionId_fk}`;
-        db.selectWhere(tables, fields, wheres, (err, results) => {
-            if (err) {
-                console.error('Error fetching data:', err);
-                return res.status(400).send('Error fetching data');
-            }
-            const promises = results.map(contract => {
-                const whereDoc = `contract_id_fk = '${contract.insurance_retrun_id}'`;
-                return new Promise((resolve, reject) => {
-                    db.selectWhere('tbl_filepay_refund', '*', whereDoc, (err, resultsDoc) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        contract.doc_pays = resultsDoc;
-                        resolve(contract);
-                    });
+    let wheres = `insurance_retrun_id != '' ${statusUse} ${dateSearch} ${agent_id_fk} ${company_id_fk} ${insurance_type_fk} ${custom_buyer_id_fk} ${optionId_fk}`;
+    db.selectWhere(tables, fields, wheres, (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            return res.status(400).send('Error fetching data');
+        }
+        const promises = results.map(contract => {
+            const whereDoc = `contract_id_fk = '${contract.insurance_retrun_id}'`;
+            return new Promise((resolve, reject) => {
+                db.selectWhere('tbl_filepay_refund', '*', whereDoc, (err, resultsDoc) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    contract.doc_pays = resultsDoc;
+                    resolve(contract);
                 });
             });
-            Promise.all(promises)
+        });
+        Promise.all(promises)
             .then(updatedResults => {
                 res.status(200).json(updatedResults);
             })
             .catch(error => {
                 res.status(400).send();
             });
-        });
     });
+});
 
 
-    router.delete("/:id", async (req, res) => {
-        const insurance_retrun_id = req.params.id;
-        const table = 'oac_insurance_retrun';
-        const where = `insurance_retrun_id=${insurance_retrun_id}`;
-        db.deleteData(table, where, (err, results) => {
-            if (err) {
-                console.error('Error inserting data:', err);
-                return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+
+
+
+//==================================================================================== 
+
+router.delete("/:id", async (req, res) => {
+    const insurance_retrun_id = req.params.id;
+    const table = 'oac_insurance_retrun';
+    const where = `insurance_retrun_id=${insurance_retrun_id}`;
+    db.deleteData(table, where, (err, results) => {
+        if (err) {
+            console.error('Error inserting data:', err);
+            return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+        }
+        const wheres = `contract_id_fk${insurance_retrun_id}`;
+        db.selectAllwhere('tbl_filepay_refund', wheres, (err, resultsFile) => {
+            if (Array.isArray(resultsFile) && resultsFile.length > 0) {
+                resultsFile.forEach((file) => {
+                    if (file.file_doct) {
+                        const filePath = `assets/docfile/${file.file_doct}`;
+                        fs.unlink(filePath, (unlinkErr) => {
+                            if (unlinkErr) console.error('Error deleting file:', unlinkErr);
+                        });
+                    }
+                });
             }
+        });
+
+        db.deleteData('tbl_filepay_refund', wheres, (err, results) => {
             console.log('Data inserted successfully:', results);
             res.status(200).json({ message: 'ການດຳເນີນງານສຳເລັດແລ້ວ', data: results });
         });
     });
 
-    router.get("/edit/:id", async (req, res) => {
-        const insurance_retrun_id = req.params.id;
-        const table = `oac_insurance_retrun
+});
+
+
+
+
+router.get("/edit/:id", async (req, res) => {
+    const insurance_retrun_id = req.params.id;
+    const table = `oac_insurance_retrun
     LEFT JOIN oac_insurance_options ON oac_insurance_retrun.option_id_fk=oac_insurance_options.options_Id
 	LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk=oac_type_insurance.type_insid`;
-        const fields = `*`;
-        const where = `insurance_retrun_id=${insurance_retrun_id}`;
-        db.fetchSingle(table, fields, where, (err, results) => {
-            if (err) {
-                console.error('Error inserting data:', err);
-                return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
-            }
-            console.log('Data inserted successfully:', results);
-            res.status(200).json(results);
-        });
+    const fields = `*`;
+    const where = `insurance_retrun_id=${insurance_retrun_id}`;
+    db.fetchSingle(table, fields, where, (err, results) => {
+        if (err) {
+            console.error('Error inserting data:', err);
+            return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+        }
+        console.log('Data inserted successfully:', results);
+        res.status(200).json(results);
     });
+});
 
 
-    // =============================
+// =============================
 
 
-    router.post("/cn", function (req, res) {
-        const { start_date, end_date, companyId_fk, insurance_typeId, option_id_fk, status_refund } = req.body;
-        const startDate = moment(start_date).format('YYYY-MM-DD');
-        const endDate = moment(end_date).format('YYYY-MM-DD');
+router.post("/cn", function (req, res) {
+    const { start_date, end_date, companyId_fk, insurance_typeId, option_id_fk, status_refund } = req.body;
+    const startDate = moment(start_date).format('YYYY-MM-DD');
+    const endDate = moment(end_date).format('YYYY-MM-DD');
 
-        let optionId_fk = '';
-        if (option_id_fk) {
-            optionId_fk = `AND option_id_fk='${option_id_fk}'`;
+    let optionId_fk = '';
+    if (option_id_fk) {
+        optionId_fk = `AND option_id_fk='${option_id_fk}'`;
+    }
+    let insurance_type_fk = '';
+    if (insurance_typeId) {
+        insurance_type_fk = `AND insurance_type_fk='${insurance_typeId}'`;
+    }
+    const statusRefund = ``;
+    if (status_refund) {
+        if (status_refund === 'cm-1') {
+            statusRefund = `AND status_company = 1`;
+        } else if (status_refund === 'cm-2') {
+            statusRefund = `AND status_company = 2`;
+        } else if (status_refund === 'ac-1') {
+            statusRefund = `AND status_oac = 1`;
+        } else if (status_refund === 'ac-2') {
+            statusRefund = `AND status_oac = 2`;
         }
-        let insurance_type_fk = '';
-        if (insurance_typeId) {
-            insurance_type_fk = `AND insurance_type_fk='${insurance_typeId}'`;
-        }
-        const statusRefund = ``;
-        if (status_refund) {
-            if (status_refund === 'cm-1') {
-                statusRefund = `AND status_company = 1`;
-            } else if (status_refund === 'cm-2') {
-                statusRefund = `AND status_company = 2`;
-            } else if (status_refund === 'ac-1') {
-                statusRefund = `AND status_oac = 1`;
-            } else if (status_refund === 'ac-2') {
-                statusRefund = `AND status_oac = 2`;
-            }
 
-        }
+    }
 
-        const tables = `oac_insurance_retrun
+    const tables = `oac_insurance_retrun
     LEFT JOIN oac_agent_sale ON oac_insurance_retrun.agent_id_fk=oac_agent_sale.agent_Id
     LEFT JOIN oac_insurance_options ON oac_insurance_retrun.option_id_fk=oac_insurance_options.options_Id
 	LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk=oac_type_insurance.type_insid
@@ -465,7 +501,7 @@ router.post('/retrun', (req, res) => {
     LEFT JOIN oac_district ON oac_custom_buyer.district_fk=oac_district.district_id
     LEFT JOIN oac_province ON oac_district.provice_fk=oac_province.province_id
 	LEFT JOIN oac_currency ON oac_insurance_retrun.currency_id_fk=oac_currency.currency_id`;
-        const field = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
+    const field = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
     insurance_retrun_id,
     company_id_fk,
     agent_id_fk,
@@ -512,68 +548,68 @@ router.post('/retrun', (req, res) => {
     province_name,
     currency_name,
     genus`;
-        const wheres = `DATE(register_date) BETWEEN '${startDate}' AND '${endDate}' AND company_id_fk='${companyId_fk}'  ${insurance_type_fk} ${optionId_fk} ${statusRefund} ORDER BY register_date ASC`;
-        db.selectWhere(tables, field, wheres, (err, results) => {
-            if (err) {
-                return res.status(400).send();
-            }
-            res.status(200).json(results);
-        });
+    const wheres = `DATE(register_date) BETWEEN '${startDate}' AND '${endDate}' AND company_id_fk='${companyId_fk}'  ${insurance_type_fk} ${optionId_fk} ${statusRefund} ORDER BY register_date ASC`;
+    db.selectWhere(tables, field, wheres, (err, results) => {
+        if (err) {
+            return res.status(400).send();
+        }
+        res.status(200).json(results);
     });
+});
 
-    // =================
+// =================
 
-    router.post("/report-pay", function (req, res) {
-        const {
-            status,
-            statusRetrun,
-            datecheck,
-            start_date,
-            end_date,
-            agentId_fk,
-            companyId_fk,
-            insurance_typeId,
-            option_id_fk
-        } = req.body;
+router.post("/report-pay", function (req, res) {
+    const {
+        status,
+        statusRetrun,
+        datecheck,
+        start_date,
+        end_date,
+        agentId_fk,
+        companyId_fk,
+        insurance_typeId,
+        option_id_fk
+    } = req.body;
 
-        const startDate = start_date ? moment(start_date).format('YYYY-MM-DD') : null;
-        const endDate = end_date ? moment(end_date).format('YYYY-MM-DD') : null;
+    const startDate = start_date ? moment(start_date).format('YYYY-MM-DD') : null;
+    const endDate = end_date ? moment(end_date).format('YYYY-MM-DD') : null;
 
-        let statusUse = '';
-        if (statusRetrun) {
-            if (status === 1) {
-                statusUse = `AND status_company = ${statusRetrun}`;
-            } else if (status === 2) {
-                statusUse = `AND status_agent = ${statusRetrun}`;
-            } else if (status === 3) {
-                statusUse = `AND status_oac = ${statusRetrun}`;
-            }
+    let statusUse = '';
+    if (statusRetrun) {
+        if (status === 1) {
+            statusUse = `AND status_company = ${statusRetrun}`;
+        } else if (status === 2) {
+            statusUse = `AND status_agent = ${statusRetrun}`;
+        } else if (status === 3) {
+            statusUse = `AND status_oac = ${statusRetrun}`;
         }
+    }
 
-        const dateSearch = `${datecheck} BETWEEN '${startDate}' AND '${endDate}'`;
+    const dateSearch = `${datecheck} BETWEEN '${startDate}' AND '${endDate}'`;
 
 
-        let agent_id_fk = '';
-        if (agentId_fk) {
-            agent_id_fk = `AND agent_id_fk = '${agentId_fk}'`;
-        }
+    let agent_id_fk = '';
+    if (agentId_fk) {
+        agent_id_fk = `AND agent_id_fk = '${agentId_fk}'`;
+    }
 
-        let company_id_fk = '';
-        if (companyId_fk) {
-            company_id_fk = `AND company_id_fk = '${companyId_fk}'`;
-        }
+    let company_id_fk = '';
+    if (companyId_fk) {
+        company_id_fk = `AND company_id_fk = '${companyId_fk}'`;
+    }
 
-        let insurance_type_fk = '';
-        if (insurance_typeId) {
-            insurance_type_fk = `AND insurance_type_fk = '${insurance_typeId}'`;
-        }
+    let insurance_type_fk = '';
+    if (insurance_typeId) {
+        insurance_type_fk = `AND insurance_type_fk = '${insurance_typeId}'`;
+    }
 
-        let optionId_fk = '';
-        if (option_id_fk) {
-            optionId_fk = `AND option_id_fk = '${option_id_fk}'`;
-        }
+    let optionId_fk = '';
+    if (option_id_fk) {
+        optionId_fk = `AND option_id_fk = '${option_id_fk}'`;
+    }
 
-        const tables = `oac_insurance_retrun
+    const tables = `oac_insurance_retrun
         LEFT JOIN oac_agent_sale ON oac_insurance_retrun.agent_id_fk = oac_agent_sale.agent_Id
         LEFT JOIN oac_insurance_options ON oac_insurance_retrun.option_id_fk = oac_insurance_options.options_Id
         LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk = oac_type_insurance.type_insid
@@ -583,7 +619,7 @@ router.post('/retrun', (req, res) => {
         LEFT JOIN oac_province ON oac_district.provice_fk = oac_province.province_id
         LEFT JOIN oac_currency ON oac_insurance_retrun.currency_id_fk = oac_currency.currency_id`;
 
-        const fields = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
+    const fields = `ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS idAuto,
         insurance_retrun_id,
         company_id_fk,
         agent_id_fk,
@@ -627,17 +663,158 @@ router.post('/retrun', (req, res) => {
         province_name,
         currency_name,
         genus,
-        (SELECT file_doct FROM tbl_filepay_refund WHERE contract_id_fk=oac_insurance_retrun.insurance_retrun_id AND status_pay=${status} LIMIT 1) AS file_pay`;
+        (SELECT file_doct FROM tbl_filepay_refund WHERE contract_id_fk=oac_insurance_retrun.insurance_retrun_id AND status_pay=${status} LIMIT 1) AS file_pay,
+        (SELECT desciption FROM tbl_filepay_refund WHERE contract_id_fk=oac_insurance_retrun.insurance_retrun_id AND status_pay=${status} LIMIT 1) AS description`;
 
-        const wheres = `${dateSearch} ${statusUse}  ${agent_id_fk} ${company_id_fk} ${insurance_type_fk} ${optionId_fk} ORDER BY ${datecheck} ASC`;
-        db.selectWhere(tables, fields, wheres, (err, results) => {
-            if (err) {
-                console.error('Error fetching data:', err);
-                return res.status(400).send('Error fetching data');
-            }
-            res.status(200).json(results);
-        });
+    const wheres = `${dateSearch} ${statusUse}  ${agent_id_fk} ${company_id_fk} ${insurance_type_fk} ${optionId_fk} ORDER BY ${datecheck} ASC`;
+    db.selectWhere(tables, fields, wheres, (err, results) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            return res.status(400).send('Error fetching data');
+        }
+        res.status(200).json(results);
+    });
+});
+
+router.post("/search", function (req, res) {
+    const { contract_number } = req.body;
+
+    const tables = `tbl_filepay_refund 
+        LEFT JOIN oac_insurance_retrun ON tbl_filepay_refund.contract_id_fk=oac_insurance_retrun.insurance_retrun_id
+        LEFT JOIN oac_agent_sale ON oac_insurance_retrun.agent_id_fk = oac_agent_sale.agent_Id
+        LEFT JOIN oac_insurance_options ON oac_insurance_retrun.option_id_fk = oac_insurance_options.options_Id
+        LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk = oac_type_insurance.type_insid
+        LEFT JOIN oac_company ON oac_insurance_retrun.company_id_fk = oac_company.company_Id
+              LEFT JOIN oac_custom_buyer ON oac_insurance_retrun.custom_buyer_id_fk = oac_custom_buyer.custom_uuid`;
+    const fields = `tbl_filepay_refund.*,
+ CASE 
+        WHEN tbl_filepay_refund.status_pay = 1 THEN 'ສົ່ງຄືນລູກຄ້າ'
+        WHEN tbl_filepay_refund.status_pay = 2 THEN 'ຕົວແທນສົ່ງຄືນ'
+        ELSE 'oac ສົ່ງຄອນ' 
+    END AS status_pay_label,
+        contract_number,
+        retrun_balance,
+        remark_text,
+        com_name_lao,
+        com_name_eng,
+        idcrad_code,
+        agent_name,
+        agent_village,
+        agent_tel,
+        options_name,
+        type_in_name,
+        customer_name,
+        village_name,
+        registra_tel`;
+    const wheres = `contract_number LIKE '%${contract_number}%'`;
+    db.selectWhere(tables, fields, wheres, (err, results) => {
+        if (err) {
+            return res.status(400).send();
+        }
+        res.status(200).json(results);
     });
 
+});
 
-    module.exports = router;
+router.post("/retrun-edit", function (req, res) {
+    let fileName = '';
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, './assets/docfile');
+        },
+        filename: function (req, file, cb) {
+            const ext = path.extname(file.originalname);
+            fileName = `retrun-${Date.now()}${ext}`;
+            cb(null, fileName);
+        }
+    });
+    const upload = multer({ storage }).single('file_pay');
+    upload(req, res, function (err) {
+        const { file_id, file_doct, desciption, file_dates } = req.body;
+        const fileDate = moment(file_dates).format('YYYY-MM-DD HH:mm:ss');
+        if (err) {
+            return res.status(400).send();
+        }
+        if (file_doct && fileName !== '') {
+            const fileDoct = `./assets/docfile/${file_doct}`;
+            fs.unlink(fileDoct, (err) => {
+                if (err) {
+                    console.error('Error deleting file:', err);
+                }
+            });
+        }
+
+        let fileNew = file_doct;
+        if (file_doct && fileName !== '') {
+            fileNew = fileName
+        }
+        const fields = 'file_doct,desciption,file_dates';
+        const newData = [fileNew, desciption, fileDate, file_id];
+        const condition = 'file_id=?';
+        db.updateData('tbl_filepay_refund', fields, newData, condition, (err, results) => {
+            if (err) {
+                return res.status(500).json({ message: `ການແກ້ໄຂຂໍ້ມູນບໍ່ສຳເລັດ` });
+            }
+            res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ' });
+        });
+    });
+});
+
+
+router.get('/del-file/:id', function (req, res) {
+    const file_id = req.params.id;
+    const where = `file_id=${file_id}`;
+
+    db.selectAllwhere('tbl_filepay_refund', where, (err, results) => {
+        if (err) {
+            console.error('Error fetching file data:', err);
+            return res.status(500).json({ error: 'Error fetching file data' });
+        }
+
+        if (!results.length) {
+            return res.status(404).json({ error: 'No record found' });
+        }
+
+        const fileRecord = results[0];
+
+        // Delete the file if it exists
+        if (fileRecord.file_doct) {
+            const filePath = `./assets/docfile/${fileRecord.file_doct}`;
+            fs.unlink(filePath, (unlinkErr) => {
+                if (unlinkErr) console.error('Error deleting file:', unlinkErr);
+            });
+        }
+
+        // Determine status field
+        let statusField = '';
+        if (fileRecord.status_pay === 1) {
+            statusField = 'status_company=?';
+        } else if (fileRecord.status_pay === 2) {
+            statusField = 'status_agent=?';
+        } else {
+            statusField = 'status_oac=?';
+        }
+
+        // Update insurance return status
+        const newData = [1, fileRecord.contract_id_fk];
+        db.updateData('oac_insurance_retrun', statusField, newData, 'insurance_retrun_id', (updateErr, updateResults) => {
+            if (updateErr) {
+                console.error('Error updating status:', updateErr);
+                return res.status(500).json({ error: 'Failed to update insurance return status' });
+            }
+
+            // Delete record from tbl_filepay_refund
+            db.deleteData('tbl_filepay_refund', where, (deleteErr, deleteResults) => {
+                if (deleteErr) {
+                    console.error('Error deleting file refund record:', deleteErr);
+                    return res.status(500).json({ error: 'Failed to delete refund record' });
+                }
+
+                res.status(200).json({ message: 'File and record deleted successfully' });
+            });
+        });
+    });
+});
+
+
+module.exports = router;

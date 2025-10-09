@@ -28,6 +28,7 @@ router.post("/create", function (req, res) {
             option_id_fk,
             currency_id_fk,
             contract_number,
+            contract_number2,
             no_contract,
             user_fname,
             user_lname,
@@ -76,37 +77,47 @@ router.post("/create", function (req, res) {
         const tableInsurance = 'oac_action_insurance';
         const tableCar = 'oac_cars_insurance';
         if (!incuranecCode) {
-            db.autoId(tableins, 'incuranec_code', (err, incuranec_code) => {
-                const fieldsct = 'incuranec_code, custom_id_fk,company_id_fk,agent_id_fk,option_id_fk,contract_number,contract_start_date,contract_end_date,contract_status,status_check,status_change,create_date';
-                const datact = [incuranec_code, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, contract_number, contract_start_date, contract_end_date, '1', '1', '1', dateTime];
-                db.insertData(tableins, fieldsct, datact, (err, results) => {
-                    if (err) {
-                        console.error('Error inserting data:', err);
-                        return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
-                    }
-                    if (statusIns && statusIns === '2') {  //--------- ບັນທຶກຂໍ້ມູນລົດ
-                        db.autoId(tableCar, 'cars_code', (err, cars_code) => {
-                            const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number,createcar_date';
-                            const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, dateTime];
-                            db.insertData(tableCar, fieldcar, datacar, (err, resultscar) => {
+            const wheres = `contract_number='${contract_number}'`;
+            db.selectAllwhere('oac_insurance', wheres, (err, resultsCk) => {
+                if (err) {
+                    return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                }
+                if (resultsCk.length > 0) {
+                    return res.status(201).json({ message: `ສັນຍານີ້ມີໃນລະບົບແລ້ວ` });
+                }
+
+
+                db.autoId(tableins, 'incuranec_code', (err, incuranec_code) => {
+                    const fieldsct = 'incuranec_code, custom_id_fk,company_id_fk,agent_id_fk,option_id_fk,contract_number,contract_start_date,contract_end_date,contract_status,status_check,status_change,create_date';
+                    const datact = [incuranec_code, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, contract_number, contract_start_date, contract_end_date, '1', '1', '1', dateTime];
+                    db.insertData(tableins, fieldsct, datact, (err, results) => {
+                        if (err) {
+                            console.error('Error inserting data:', err);
+                            return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                        }
+                        if (statusIns && statusIns === '2') {  //--------- ບັນທຶກຂໍ້ມູນລົດ
+                            db.autoId(tableCar, 'cars_code', (err, cars_code) => {
+                                const fieldcar = 'cars_code, contract_id_fk,car_type_id_fk,car_brand_id_fk,version_name,car_registration,vehicle_number,tank_number,createcar_date';
+                                const datacar = [cars_code, incuranec_code, car_type_id_fk, car_brand_id_fk, version_name, car_registration, vehicle_number, tank_number, dateTime];
+                                db.insertData(tableCar, fieldcar, datacar, (err, resultscar) => {
+                                    if (err) {
+                                        return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                                    }
+                                });
+                            });
+                        }
+                        if (fileName && fileName !== '') {
+                            const fieldfile = 'contract_code_fk,file_insurance,create_date';
+                            const datafile = [incuranec_code, fileName, dateTime];
+                            db.insertData('oac_doc_insurance', fieldfile, datafile, (err, results) => {
                                 if (err) {
                                     return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
                                 }
                             });
-                        });
-                    }
-                    if (fileName && fileName !== '') {
-                        const fieldfile = 'contract_code_fk,file_insurance,create_date';
-                        const datafile = [incuranec_code, fileName, dateTime];
-                        db.insertData('oac_doc_insurance', fieldfile, datafile, (err, results) => {
-                            if (err) {
-                                return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
-                            }
-                        });
-                    }
+                        }
 
-                    db.autoId(tableInsurance, 'actionId', (err, actionId) => {
-                        const fieldIn = `actionId,
+                        db.autoId(tableInsurance, 'actionId', (err, actionId) => {
+                            const fieldIn = `actionId,
                             contract_code_fk,
                             currency_id_fk,
                             initial_fee,
@@ -131,57 +142,70 @@ router.post("/create", function (req, res) {
                             agent_date,
                             status_oac,
                             oac_date `;
-                        const dataIn = [actionId,
-                            incuranec_code,
-                            currency_id_fk,
-                            initial_fee,
-                            percent_taxes,
-                            money_taxes,
-                            registration_fee,
-                            insuranc_included,
-                            precent_incom,
-                            pre_tax_profit,
-                            percent_akorn,
-                            incom_money,
-                            incom_finally,
-                            percent_eps,
-                            pays_advance_fee,
-                            percent_fee_eps,
-                            money_percent_fee,
-                            expences_pays_taxes,
-                            net_income,
-                            status_company,
-                            company_date,
-                            status_agent,
-                            agent_date,
-                            status_oac,
-                            oac_date];
-                        db.insertData(tableInsurance, fieldIn, dataIn, (err, resultsIn) => {
-                            if (err) {
-                                return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
-                            }
+                            const dataIn = [actionId,
+                                incuranec_code,
+                                currency_id_fk,
+                                initial_fee,
+                                percent_taxes,
+                                money_taxes,
+                                registration_fee,
+                                insuranc_included,
+                                precent_incom,
+                                pre_tax_profit,
+                                percent_akorn,
+                                incom_money,
+                                incom_finally,
+                                percent_eps,
+                                pays_advance_fee,
+                                percent_fee_eps,
+                                money_percent_fee,
+                                expences_pays_taxes,
+                                net_income,
+                                status_company,
+                                company_date,
+                                status_agent,
+                                agent_date,
+                                status_oac,
+                                oac_date];
+                            db.insertData(tableInsurance, fieldIn, dataIn, (err, resultsIn) => {
+                                if (err) {
+                                    return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                                }
+                            });
                         });
+
+                        const fieldsbene = `insurance_id_fk,no_contract,user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village,status_use`;
+                        let userdob = '';
+                        if (user_dob) {
+                            userdob = moment(user_dob).format('YYYY-MM-DD');
+                        }
+                        if (user_fname && user_fname !== '') {
+                            const databene = [incuranec_code, no_contract, user_fname, user_lname, user_gender, userdob, user_tel, user_district_fk, user_village, status_use];
+                            db.insertData('oac_beneficiaries', fieldsbene, databene, (err, results) => {
+                                if (err) {
+                                    return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                                }
+                            })
+                        }
+
+                        console.log('Data updated successfully:', results);
+                        res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ', data: results });
                     });
-
-                    const fieldsbene = `insurance_id_fk,no_contract,user_fname, user_lname, user_gender, user_dob, user_tel, user_district_fk, user_village,status_use`;
-                    let userdob = '';
-                    if (user_dob) {
-                        userdob = moment(user_dob).format('YYYY-MM-DD');
-                    }
-                    if (user_fname && user_fname !== '') {
-                        const databene = [incuranec_code, no_contract, user_fname, user_lname, user_gender, userdob, user_tel, user_district_fk, user_village, status_use];
-                        db.insertData('oac_beneficiaries', fieldsbene, databene, (err, results) => {
-                            if (err) {
-                                return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
-                            }
-                        })
-                    }
-
-                    console.log('Data updated successfully:', results);
-                    res.status(200).json({ message: 'ການແກ້ໄຂຂໍ້ມູນສຳເລັດ', data: results });
                 });
             });
         } else {
+
+            if (contract_number !== contract_number2) {
+                const wheres = `contract_number='${contract_number}'`;
+                db.selectAllwhere('oac_insurance', wheres, (err, resultsCk) => {
+                    if (err) {
+                        return res.status(500).json({ message: `ການບັນທຶກຂໍ້ມູນບໍ່ສ້ຳເລັດ` });
+                    }
+                    if (resultsCk.length > 0) {
+                        return res.status(201).json({ message: `ສັນຍານີ້ມີໃນລະບົບແລ້ວ` });
+                    }
+                });
+            }
 
             const fields = 'company_id_fk,agent_id_fk,option_id_fk,contract_number,contract_start_date,contract_end_date,contract_status';
             const newData = [company_id_fk, agent_id_fk, option_id_fk, contract_number, contract_start_date, contract_end_date, '1', incuranecCode];
@@ -493,15 +517,16 @@ router.post("/search", function (req, res) {
     LEFT JOIN oac_agent_sale ON oac_insurance.agent_id_fk=oac_agent_sale.agent_Id
     LEFT JOIN oac_insurance_options ON oac_insurance.option_id_fk=oac_insurance_options.options_Id
     LEFT JOIN oac_type_insurance ON oac_insurance_options.insurance_type_fk=oac_type_insurance.type_insid
-    LEFT JOIN oac_company ON oac_insurance.company_id_fk=oac_company.company_Id `;
+    LEFT JOIN oac_company ON oac_insurance.company_id_fk=oac_company.company_Id 
+    LEFT JOIN oac_beneficiaries ON oac_insurance.incuranec_code=oac_beneficiaries.insurance_id_fk`;
     const where = `contract_status='1' AND contract_number LIKE '%${contract_number}%'`;
     const fileds = `oac_insurance.incuranec_code,
     oac_insurance.contract_number,
     oac_insurance.contract_start_date,
     oac_insurance.contract_end_date,
-    oac_insurance.user_fname,
-    oac_insurance.user_lname,
-    oac_insurance.user_tel,
+    oac_beneficiaries.user_fname,
+    oac_beneficiaries.user_lname,
+    oac_beneficiaries.user_tel,
     oac_type_insurance.type_in_name,
     oac_insurance_options.options_name,
     oac_agent_sale.agent_name,
@@ -736,14 +761,14 @@ router.delete('/bene/:id', function (req, res) {
 
 
 router.post('/contract', function (req, res) {
-const {contractNumber,statusUse} = req.body;
-const wheres = `contract_number LIKE '%${contractNumber}%' AND contract_status = '${statusUse}'`;
-db.selectWhere('oac_insurance', '*', wheres, (err, results) => {
-    if (err) {
-        return res.status(400).send();
-    }
-    res.status(200).json(results);
-});
+    const { contractNumber, statusUse } = req.body;
+    const wheres = `contract_number LIKE '%${contractNumber}%' AND contract_status = '${statusUse}'`;
+    db.selectWhere('oac_insurance', '*', wheres, (err, results) => {
+        if (err) {
+            return res.status(400).send();
+        }
+        res.status(200).json(results);
+    });
 });
 
 module.exports = router

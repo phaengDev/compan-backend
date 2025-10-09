@@ -28,6 +28,7 @@ router.post("/create", function (req, res) {
             option_id_fk,
             currency_id_fk,
             contract_number,
+            contract_number2,
             no_contract,
             user_fname,
             user_lname,
@@ -59,17 +60,8 @@ router.post("/create", function (req, res) {
             status_oac
         } = req.body;
 
-        // const initial_fee = parseFloat(req.body.initial_fee.replace(/,/g, ''));
-        // const money_taxes = parseFloat(req.body.money_taxes.replace(/,/g, ''));
         const registration_fee = parseFloat(req.body.registration_fee.replace(/,/g, ''));
         const insuranc_included = parseFloat(req.body.insuranc_included.replace(/,/g, ''));
-        // const pre_tax_profit = parseFloat(req.body.pre_tax_profit.replace(/,/g, ''));
-        // const incom_money = parseFloat(req.body.incom_money.replace(/,/g, ''));
-        // const incom_finally = parseFloat(req.body.incom_finally.replace(/,/g, ''));
-        // const pays_advance_fee = parseFloat(req.body.pays_advance_fee.replace(/,/g, ''));
-        // const money_percent_fee = parseFloat(req.body.money_percent_fee.replace(/,/g, ''));
-        // const expences_pays_taxes = parseFloat(req.body.expences_pays_taxes.replace(/,/g, ''));
-        // const net_income = parseFloat(req.body.net_income.replace(/,/g, ''));
 
         const contract_start_date = moment(req.body.contract_start_date).format('YYYY-MM-DD');
         const contract_end_date = moment(req.body.contract_end_date).format('YYYY-MM-DD');
@@ -85,6 +77,7 @@ router.post("/create", function (req, res) {
             db.autoId(tableins, 'incuranec_code', (err, incuranec_code) => {
                 const fieldsct = 'incuranec_code, custom_id_fk,company_id_fk,agent_id_fk,option_id_fk,contract_number,contract_start_date,contract_end_date,contract_status,status_check,status_change,create_date';
                 const datact = [incuranec_code, custom_id_fk, company_id_fk, agent_id_fk, option_id_fk, contract_number, contract_start_date, contract_end_date, '1', '1', '1', dateTime];
+               
                 db.insertData(tableins, fieldsct, datact, (err, results) => {
                     if (err) {
                         console.error('Error inserting data:', err);
@@ -602,19 +595,19 @@ router.delete('/:id', function (req, res) {
         db.deleteData('oac_insurance', where, (err, results) => {
             if (err) {
                 console.error('Error insurance data:', err);
-                return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                return res.status(500).json({ error: 'ການບັນລຶບຂໍ້ມູນບໍ່ສຳເລັດ' });
             }
             db.deleteData('oac_action_insurance', whereAc, (err, results) => {
                 if (err) {
                     console.error('Error action-insurance data:', err);
-                    return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                    return res.status(500).json({ error: 'ການບັນລຶບຂໍ້ມູນບໍ່ສຳເລັດ' });
                 }
             });
 
             db.deleteData('oac_cars_insurance', whereCar, (err, results) => {
                 if (err) {
                     console.error('Error cars insurance data:', err);
-                    return res.status(500).json({ error: 'ການບັນທຶກຂໍ້ມູນບໍ່ສຳເລັດ' });
+                    return res.status(500).json({ error: 'ການລຶບຂໍ້ມູນບໍ່ສຳເລັດ' });
                 }
             });
             db.selectAllwhere('oac_doc_insurance', whereDoc, (err, docResults) => {
